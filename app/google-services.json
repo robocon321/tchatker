@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "133916607440",
+    "project_id": "tchatker",
+    "storage_bucket": "tchatker.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:133916607440:android:8120d573a54bf399062fd5",
+        "android_client_info": {
+          "package_name": "com.example.tchatker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "133916607440-o4s0ef5odapankv4mm0si8nfar6it4ic.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDSoRG2rb-5GxS_3nHo0YvHGDKKwgD7ojQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "133916607440-o4s0ef5odapankv4mm0si8nfar6it4ic.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
