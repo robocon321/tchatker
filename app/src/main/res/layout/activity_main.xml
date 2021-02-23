@@ -1,5 +1,4 @@
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout
     android:layout_height="match_parent"
     android:layout_width="match_parent"
     xmlns:android="http://schemas.android.com/apk/res/android">
@@ -7,7 +6,16 @@
     <TextView
         android:text="TChatker"
         android:textSize="42dp"
+        android:fontFamily="@font/segoesc"
+        android:textColor="#E28F8F"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@id/progBar"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        tools:ignore="MissingConstraints" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:layout_height="wrap_content" />
+    <ProgressBar
+        android:id="@+id/progBar"
+        android:layout_centerInParent="true"
+        android:theme="@style/Widget.MaterialComponents.CircularProgressIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+</RelativeLayout>
