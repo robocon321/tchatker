@@ -53,6 +53,12 @@ public class CreateAccountActivity extends AppCompatActivity {
     }
 
     public void setEvents(){
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
         btnNewAccount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -86,7 +92,7 @@ public class CreateAccountActivity extends AppCompatActivity {
                             editUname.requestFocus();
                             return ;
                         }else{
-                            reference.push().setValue(new Account(uname,pwd,"","",new Date(1990,1,1)))
+                            reference.push().setValue(new Account(uname,pwd,"","","",new Date(1990,1,1)))
                                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:paddingHorizontal="50dp"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout
+        android:gravity="center"
+        android:layout_centerInParent="true"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:text="TChatker"
+            android:textSize="42dp"
+            android:fontFamily="@font/segoesc"
+            android:textColor="#E28F8F"
+            android:layout_centerHorizontal="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/txtNotify"
+            android:textSize="20dp"
+            android:gravity="center"
+            android:text="We just sent a number \n to your phone. Enter it \n before 60s"
+            android:fontFamily="@font/calibri"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="\tYour code"
+            android:textColorHint="#EBC3C3">
+            <EditText
+                android:id="@+id/editOTP"
+                android:background="@color/white"
+                android:textSize="18dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        </com.google.android.material.textfield.TextInputLayout>
+        <Button
+            android:id="@+id/btnEnter"
+            android:text="Enter"
+            android:backgroundTint="#2699FB"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+        <Button
+            android:id="@+id/btnCancel"
+            android:text="Cancel"
+            android:backgroundTint="#2699FB"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+</RelativeLayout>

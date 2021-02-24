@@ -1,10 +1,12 @@
 package com.example.tchatker.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
 public class Account {
     private String uname;
     private String pwd;
+    private String name;
     private String phoneNumber;
     private String email;
     private Date birthDay;
@@ -12,9 +14,10 @@ public class Account {
     public Account() {
     }
 
-    public Account(String uname, String pwd, String phoneNumber, String email, Date birthDay) {
+    public Account(String uname, String pwd, String name, String phoneNumber, String email, Date birthDay) {
         this.uname = uname;
         this.pwd = pwd;
+        this.name = name;
         this.phoneNumber = phoneNumber;
         this.email = email;
         this.birthDay = birthDay;
@@ -34,6 +37,14 @@ public class Account {
 
     public void setPwd(String pwd) {
         this.pwd = pwd;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getPhoneNumber() {
@@ -65,9 +76,11 @@ public class Account {
         return "Account{" +
                 "uname='" + uname + '\'' +
                 ", pwd='" + pwd + '\'' +
+                ", name='" + name + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", email='" + email + '\'' +
                 ", birthDay=" + birthDay +
                 '}';
     }
+
 }
