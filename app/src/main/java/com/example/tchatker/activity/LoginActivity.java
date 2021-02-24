@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.PagerAdapter;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -32,19 +33,26 @@ public class LoginActivity extends AppCompatActivity {
     TextView txtForgotAccount;
     FirebaseDatabase database;
     DatabaseReference reference;
+    SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        init();
         addControls();
         setEvents();
     }
 
-    public void init(){
+    @Override
+    protected void onStart() {
+        super.onStart();
         database = FirebaseDatabase.getInstance();
         reference = database.getReference("user");
+        sharedPreferences = this.getSharedPreferences("login", MODE_PRIVATE);
+        if(sharedPreferences.contains("uname")) {
+            Intent intent = new Intent();
+            startActivity(intent);
+        }
     }
 
     public void addControls(){
@@ -74,7 +82,9 @@ public class LoginActivity extends AppCompatActivity {
                                     editPwd.setError("Incorrect password");
                                     editPwd.requestFocus();
                                 }else{
-                                    Toast.makeText(LoginActivity.this, "Completed!", Toast.LENGTH_SHORT).show();
+                                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                                    editor.putString("uname", account.getUname());
+                                    editor.commit();
                                 }
                             }
                         }
@@ -103,4 +113,5 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
     }
+
 }
