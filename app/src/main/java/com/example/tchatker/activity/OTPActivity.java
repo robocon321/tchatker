@@ -29,7 +29,7 @@ public class OTPActivity extends AppCompatActivity {
     EditText editOTP;
     TextView txtNotify;
     FirebaseAuth mAuth;
-    int timeout = 10;
+    int timeout = 60;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,8 +52,8 @@ public class OTPActivity extends AppCompatActivity {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                String str = "We just sent a number \n to your phone. Enter it \n before "+timeout+"s";
                 timeout --;
+                String str = "We just sent a number \n to your phone. Enter it \n before "+timeout+"s";
                 if(timeout >= 0) {
                     txtNotify.setText(str);
                     handler.postDelayed(this, 1000);
@@ -76,7 +76,7 @@ public class OTPActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String otp = editOTP.getText().toString();
                 Log.d("OTP", otp+"\t"+code);
-                PhoneAuthCredential credential = PhoneAuthProvider.getCredential(otp, code);
+                PhoneAuthCredential credential = PhoneAuthProvider.getCredential(code, otp);
                 signInWithPhoneAuthCredential(credential);
             }
         });
