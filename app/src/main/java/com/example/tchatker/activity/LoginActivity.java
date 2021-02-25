@@ -46,13 +46,13 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        database = FirebaseDatabase.getInstance();
-        reference = database.getReference("user");
         sharedPreferences = this.getSharedPreferences("login", MODE_PRIVATE);
         if(sharedPreferences.contains("uname")) {
-            Intent intent = new Intent();
+            Intent intent = new Intent(this, HomeActivity.class);
             startActivity(intent);
         }
+        database = FirebaseDatabase.getInstance();
+        reference = database.getReference("user");
     }
 
     public void addControls(){
@@ -85,6 +85,9 @@ public class LoginActivity extends AppCompatActivity {
                                     SharedPreferences.Editor editor = sharedPreferences.edit();
                                     editor.putString("uname", account.getUname());
                                     editor.commit();
+
+                                    Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+                                    startActivity(intent);
                                 }
                             }
                         }
