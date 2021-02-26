@@ -10,17 +10,37 @@ public class Account {
     private String phoneNumber;
     private String email;
     private Date birthDay;
+    private String avatar;
+    private String status;
 
     public Account() {
     }
 
-    public Account(String uname, String pwd, String name, String phoneNumber, String email, Date birthDay) {
+    public Account(String uname, String pwd, String name, String phoneNumber, String email, Date birthDay, String avatar, String status) {
         this.uname = uname;
         this.pwd = pwd;
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.email = email;
         this.birthDay = birthDay;
+        this.avatar = avatar;
+        this.status = status;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 
     public String getUname() {
@@ -80,7 +100,8 @@ public class Account {
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", email='" + email + '\'' +
                 ", birthDay=" + birthDay +
+                ", avatar='" + avatar + '\'' +
+                ", status='" + status + '\'' +
                 '}';
     }
-
 }
