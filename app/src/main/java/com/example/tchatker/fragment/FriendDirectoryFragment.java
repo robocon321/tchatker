@@ -70,9 +70,10 @@ public class FriendDirectoryFragment extends Fragment {
         reference.orderByChild("uname").equalTo(uname).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot itemSnapshot : snapshot.getChildren()){
-                    for(DataSnapshot itemFriend : itemSnapshot.child("friends").getChildren()){
-                        String unameFriend = itemFriend.child("uname").getValue(String.class);
+                for(DataSnapshot item : snapshot.getChildren()){
+                    for(DataSnapshot itemFriend : item.child("friends").getChildren()){
+                        String unameFriend = itemFriend.getValue().toString();
+
                         reference.orderByChild("uname").equalTo(unameFriend).addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot snapshotFriend) {
