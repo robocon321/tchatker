@@ -10,8 +10,8 @@ import com.example.tchatker.fragment.MessageFragment;
 import com.example.tchatker.fragment.NewsFragment;
 import com.example.tchatker.fragment.SettingFragment;
 
-public class ViewPagerAdapter extends FragmentPagerAdapter {
-    public ViewPagerAdapter(@NonNull FragmentManager fm) {
+public class HomeViewPagerAdapter extends FragmentPagerAdapter {
+    public HomeViewPagerAdapter(@NonNull FragmentManager fm) {
         super(fm);
     }
 

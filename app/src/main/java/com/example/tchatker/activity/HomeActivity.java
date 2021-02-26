@@ -8,7 +8,7 @@ import android.os.Bundle;
 import android.view.MenuItem;
 
 import com.example.tchatker.R;
-import com.example.tchatker.adapter.ViewPagerAdapter;
+import com.example.tchatker.adapter.HomeViewPagerAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class HomeActivity extends AppCompatActivity {
@@ -25,9 +25,9 @@ public class HomeActivity extends AppCompatActivity {
 
     public void addControls(){
         bottomNav = findViewById(R.id.bottomNav);
-        viewPager = findViewById(R.id.viewPager);
+        viewPager = findViewById(R.id.viewPagerHome);
 
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+        HomeViewPagerAdapter adapter = new HomeViewPagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(adapter);
         viewPager.setOffscreenPageLimit(1); // Giới hạn page được load trước và giá trị 1 cũng là mặc định
     }
