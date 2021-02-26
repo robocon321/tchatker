@@ -11,7 +11,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Tchatker">
-        <activity android:name=".activity.HomeActivity"></activity>
+        <activity android:name=".activity.ChatMessageActivity"></activity>
+        <activity android:name=".activity.HomeActivity" />
         <activity android:name=".activity.OTPActivity" />
         <activity android:name=".activity.ForgotPasswordActivity" />
         <activity android:name=".activity.CreateAccountActivity" />
