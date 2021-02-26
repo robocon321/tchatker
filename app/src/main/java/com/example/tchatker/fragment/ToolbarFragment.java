@@ -15,7 +15,7 @@ public class ToolbarFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.search_tool, container, false);
+        View view = inflater.inflate(R.layout.fragment_search_tool, container, false);
         return view;
     }
 }
