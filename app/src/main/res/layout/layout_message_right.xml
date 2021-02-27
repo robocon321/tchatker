@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    android:layout_centerVertical="true"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="right"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/imgAvatar"
+        android:src="@drawable/user"
+        android:layout_alignParentRight="true"
+        android:layout_width="40dp"
+        android:layout_height="40dp"/>
+    <RelativeLayout
+        android:id="@+id/layoutAddComponent"
+        android:textColor="@color/white"
+        android:background="#4CAF50"
+        android:padding="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_toLeftOf="@id/imgAvatar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+    </RelativeLayout>
+    <TextView
+        android:id="@+id/txtStatus"
+        android:text="Đã xem"
+        android:layout_below="@id/layoutAddComponent"
+        android:layout_alignLeft="@id/layoutAddComponent"
+        android:layout_marginLeft="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+</RelativeLayout>
