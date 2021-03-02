@@ -32,7 +32,7 @@ public class Time {
     public Time() {
         Calendar calendar = Calendar.getInstance();
         this.year = calendar.get(Calendar.YEAR);
-        this.month = calendar.get(Calendar.MONTH);
+        this.month = calendar.get(Calendar.MONTH)+1;
         this.day = calendar.get(Calendar.DATE);
         this.hour = calendar.get(Calendar.HOUR_OF_DAY);
         this.minute = calendar.get(Calendar.MINUTE);

@@ -1,16 +1,194 @@
 package com.example.tchatker.activity;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Log;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.tchatker.R;
+import com.example.tchatker.adapter.MessageRecyclerViewAdapter;
+import com.example.tchatker.model.Account;
+import com.example.tchatker.model.Message;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class ChatMessageActivity extends AppCompatActivity {
+    int REQ_GET_IMAGE = 100;
+
+    FirebaseDatabase database;
+    DatabaseReference databaseReference;
+
+    ImageView imgBack, imgCall, imgVideoCall;
+    TextView txtName, txtStatus;
+
+    RecyclerView recyclerViewMessage;
+    ArrayList<Message> messages;
+    MessageRecyclerViewAdapter adapter;
+
+    ImageView imgEmoji, imgAttach, imgPicture, imgCamera, imgSend;
+    EditText editMessage;
+
+    Account account;
+    String idBoxMessage;
+
+    SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_message);
+        addControls();
+        initData();
+        setEvents();
     }
+
+    public void addControls(){
+        imgBack = findViewById(R.id.imgBack);
+        imgCall = findViewById(R.id.imgCall);
+        imgVideoCall = findViewById(R.id.imgVideoCall);
+        txtName = findViewById(R.id.txtName);
+        txtStatus = findViewById(R.id.txtStatus);
+
+        recyclerViewMessage = findViewById(R.id.recyclerViewMessage);
+
+        imgEmoji = findViewById(R.id.imgEmoji);
+        imgAttach = findViewById(R.id.imgAttach);
+        imgPicture = findViewById(R.id.imgPicture);
+        imgCamera = findViewById(R.id.imgCamera);
+        imgSend = findViewById(R.id.imgSend);
+
+        editMessage = findViewById(R.id.editMessage);
+    }
+
+    public void initData(){
+        initHeader();
+        initMessageContent();
+    }
+
+    public void initHeader(){
+        account = (Account) getIntent().getSerializableExtra("account");
+
+        String name = account.getName();
+        if(name == null) name = account.getUname();
+        txtName.setText(name);
+
+        String status = account.getStatus();
+        if (status.equals("online")){
+            txtStatus.setText("Đang hoạt động");
+            txtStatus.setCompoundDrawablesWithIntrinsicBounds(R.drawable.online, 0,0,0);
+        }
+        else {
+            txtStatus.setText("Không hoạt động");
+            txtStatus.setCompoundDrawablesWithIntrinsicBounds(R.drawable.offline,0,0,0);
+        }
+    }
+
+    public void initMessageContent(){
+        database = FirebaseDatabase.getInstance();
+        databaseReference = database.getReference();
+
+        sharedPreferences = getSharedPreferences("login", MODE_PRIVATE);
+        String myUname = sharedPreferences.getString("uname","robocon321");
+
+        messages = new ArrayList<>();
+        adapter = new MessageRecyclerViewAdapter(messages, ChatMessageActivity.this);
+
+        databaseReference.child("user").orderByChild("uname").equalTo(myUname).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for(DataSnapshot itemUser : snapshot.getChildren()){
+                    for(DataSnapshot boxMessage : itemUser.child("messages").getChildren()){
+                        String idBoxMessage = boxMessage.getValue(String.class);
+                        databaseReference.child("chat").orderByKey().equalTo(idBoxMessage).addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshotChat) {
+                                if (snapshotChat.exists())
+                                    for(DataSnapshot itemBoxChat : snapshotChat.getChildren()){
+                                        if(itemBoxChat.child("type").getValue(String.class).equals("person")){
+                                            for(DataSnapshot memberSnapshot : itemBoxChat.child("member").getChildren()){
+                                                if(memberSnapshot.getValue(String.class).equals(account.getUname())){
+                                                    messages.clear();
+                                                    for(DataSnapshot messageSnapShot : itemBoxChat.child("message").getChildren()){
+                                                        Message message = messageSnapShot.getValue(Message.class);
+                                                        messages.add(message);
+                                                        ChatMessageActivity.this.idBoxMessage = idBoxMessage;
+
+                                                        // Change status
+                                                        if(!message.getSender().equals(myUname)){
+                                                            databaseReference.child("chat")
+                                                                    .child(idBoxMessage)
+                                                                    .child("message")
+                                                                    .child(messageSnapShot.getKey())
+                                                                    .child("status").setValue(true);
+                                                        }
+                                                    }
+                                                    Collections.sort(messages);
+                                                }
+                                                adapter.notifyDataSetChanged();
+                                            }
+                                        }
+                                    }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+                                Log.e("Error", error.getMessage());
+                            }
+                        });
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Error", error.getMessage());
+            }
+        });
+
+        recyclerViewMessage.setAdapter(adapter);
+        recyclerViewMessage.setHasFixedSize(true);
+        recyclerViewMessage.setLayoutManager(new LinearLayoutManager(ChatMessageActivity.this));
+    }
+
+    public void setEvents(){
+        imgSend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String content = editMessage.getText().toString().trim();
+                String sender = sharedPreferences.getString("uname","robocon321");
+                boolean status = false;
+                String typeContent = "String";
+                Message message = new Message(sender, content, status, typeContent);
+                databaseReference.child("chat").child(idBoxMessage).child("message").push().setValue(message);
+            }
+        });
+
+        imgBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
+
+    }
+
 }

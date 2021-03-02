@@ -2,6 +2,7 @@ package com.example.tchatker.adapter;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.tchatker.R;
+import com.example.tchatker.activity.ChatMessageActivity;
 import com.example.tchatker.model.Account;
 import com.squareup.picasso.Picasso;
 
@@ -92,7 +94,9 @@ public class FriendRecyclerViewAdapter extends RecyclerView.Adapter<FriendRecycl
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(itemView.getContext(), "You click: "+getAdapterPosition(), Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(context, ChatMessageActivity.class);
+                    intent.putExtra("account", accounts.get(getAdapterPosition()));
+                    context.startActivity(intent);
                 }
             });
         }

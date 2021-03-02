@@ -1,25 +1,29 @@
 package com.example.tchatker.model;
 
-public class Message {
+public class Message implements Comparable<Message>{
     private String sender;
     private String content;
-    private String status;
-    private String type;
+    private boolean status;
+    private String typeContent;
     private Time time;
 
-    public Message(String sender, String content, String status, String type, Time time) {
+    public Message(){
+
+    }
+
+    public Message(String sender, String content, boolean status, String typeContent, Time time) {
         this.sender = sender;
         this.content = content;
         this.status = status;
-        this.type = type;
+        this.typeContent = typeContent;
         this.time = time;
     }
 
-    public Message(String sender, String content, String status, String type) {
+    public Message(String sender, String content, boolean status, String typeContent) {
         this.sender = sender;
         this.content = content;
         this.status = status;
-        this.type = type;
+        this.typeContent = typeContent;
         this.time = new Time();
     }
 
@@ -39,20 +43,20 @@ public class Message {
         this.content = content;
     }
 
-    public String getStatus() {
+    public boolean getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(boolean status) {
         this.status = status;
     }
 
-    public String getType() {
-        return type;
+    public String getTypeContent() {
+        return typeContent;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setTypeContent(String typeContent) {
+        this.typeContent = typeContent;
     }
 
     public Time getTime() {
@@ -69,8 +73,46 @@ public class Message {
                 "sender='" + sender + '\'' +
                 ", content='" + content + '\'' +
                 ", status='" + status + '\'' +
-                ", type='" + type + '\'' +
+                ", type='" + typeContent + '\'' +
                 ", time=" + time +
                 '}';
+    }
+
+    @Override
+    public int compareTo(Message o) {
+        if(time.getYear() > o.getTime().getYear())
+            return 1;
+        else if(time.getYear() < o.getTime().getYear())
+            return -1;
+        else{
+            if(time.getMonth() > o.getTime().getMonth())
+                return 1;
+            else if(time.getMonth() < o.getTime().getMonth())
+                return -1;
+            else {
+                if(time.getDay() > o.getTime().getDay())
+                    return 1;
+                else if(time.getDay() < o.getTime().getDay())
+                    return -1;
+                else{
+                    if(time.getHour() > o.getTime().getHour())
+                        return 1;
+                    else if(time.getHour() < o.getTime().getHour())
+                        return -1;
+                    else{
+                        if(time.getMinute() > o.getTime().getMinute())
+                            return 1;
+                        else if(time.getMinute() < o.getTime().getMinute())
+                            return -1;
+                        else{
+                            if(time.getSecond() > o.getTime().getSecond())
+                                return 1;
+                            else
+                                return -1;
+                        }
+                    }
+                }
+            }
+        }
     }
 }

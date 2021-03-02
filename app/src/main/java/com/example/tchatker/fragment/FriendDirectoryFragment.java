@@ -98,6 +98,7 @@ public class FriendDirectoryFragment extends Fragment {
                 Log.d("Error", error.getMessage());
             }
         });
+
     }
 
 }
