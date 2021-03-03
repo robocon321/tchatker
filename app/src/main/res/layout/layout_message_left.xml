@@ -12,8 +12,7 @@
         android:layout_height="40dp"/>
     <RelativeLayout
         android:id="@+id/layoutAddComponent"
-        android:textColor="@color/white"
-        android:background="#4CAF50"
+        android:background="#B9F7FF"
         android:padding="10dp"
         android:layout_marginLeft="10dp"
         android:layout_toRightOf="@id/imgAvatar"
@@ -28,5 +27,6 @@
         android:layout_alignRight="@id/layoutAddComponent"
         android:layout_marginRight="10dp"
         android:layout_width="wrap_content"
+        android:visibility="invisible"
         android:layout_height="wrap_content"/>
 </RelativeLayout>

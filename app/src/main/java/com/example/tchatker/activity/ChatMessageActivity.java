@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -22,13 +23,22 @@ import com.example.tchatker.R;
 import com.example.tchatker.adapter.MessageRecyclerViewAdapter;
 import com.example.tchatker.model.Account;
 import com.example.tchatker.model.Message;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 
 public class ChatMessageActivity extends AppCompatActivity {
@@ -36,6 +46,9 @@ public class ChatMessageActivity extends AppCompatActivity {
 
     FirebaseDatabase database;
     DatabaseReference databaseReference;
+
+    FirebaseStorage storage;
+    StorageReference storageReference;
 
     ImageView imgBack, imgCall, imgVideoCall;
     TextView txtName, txtStatus;
@@ -80,8 +93,17 @@ public class ChatMessageActivity extends AppCompatActivity {
     }
 
     public void initData(){
+        initFirebase();
         initHeader();
         initMessageContent();
+    }
+
+    public void initFirebase() {
+        database = FirebaseDatabase.getInstance();
+        databaseReference = database.getReference();
+
+        storage = FirebaseStorage.getInstance();
+        storageReference = storage.getReferenceFromUrl("gs://tchatker.appspot.com");
     }
 
     public void initHeader(){
@@ -103,9 +125,6 @@ public class ChatMessageActivity extends AppCompatActivity {
     }
 
     public void initMessageContent(){
-        database = FirebaseDatabase.getInstance();
-        databaseReference = database.getReference();
-
         sharedPreferences = getSharedPreferences("login", MODE_PRIVATE);
         String myUname = sharedPreferences.getString("uname","robocon321");
 
@@ -189,6 +208,54 @@ public class ChatMessageActivity extends AppCompatActivity {
             }
         });
 
+        imgCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(intent, REQ_GET_IMAGE);
+            }
+        });
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent dataIntent) {
+        super.onActivityResult(requestCode, resultCode, dataIntent);
+        if(requestCode == REQ_GET_IMAGE && resultCode == RESULT_OK && dataIntent != null){
+            Bitmap bitmap = (Bitmap) dataIntent.getExtras().get("data");
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+            byte[] data = baos.toByteArray();
+
+            Calendar calendar = Calendar.getInstance();
+
+            UploadTask uploadTask = storageReference.child("image").child("image"+calendar.getTimeInMillis()).putBytes(data);
+            uploadTask.addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    Log.e("Error", exception.getMessage());
+                }
+            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    Task task = taskSnapshot.getMetadata().getReference().getDownloadUrl();
+
+                    task.addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            if(task.isSuccessful()) {
+                                String content = uri.toString();
+                                String sender = sharedPreferences.getString("uname","robocon321");
+                                boolean status = false;
+                                String typeContent = "Image";
+                                Message message = new Message(sender, content, status, typeContent);
+                                databaseReference.child("chat").child(idBoxMessage).child("message").push().setValue(message);
+                            } else
+                                Log.e("Error","Uncompleted!");
+                        }
+                    });
+                }
+            });
+
+        }
+    }
 }

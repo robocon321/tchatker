@@ -100,7 +100,6 @@ public class MessageRecyclerViewAdapter extends RecyclerView.Adapter<MessageRecy
         String content = message.getContent();
         View view;
 
-
         switch (holder.viewType){
             case TYPE_TEXT_VIEW:
                 view = new TextView(context);
