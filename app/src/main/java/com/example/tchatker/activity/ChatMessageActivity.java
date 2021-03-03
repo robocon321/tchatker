@@ -8,11 +8,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -261,10 +263,12 @@ public class ChatMessageActivity extends AppCompatActivity {
             }
             uploadImageBitmap(bitmap);
         }else if(requestCode == REQ_GET_FILE && resultCode == RESULT_OK && dataIntent != null){
-            String path = dataIntent.getData().getPath();
             try {
+                String nameFile = getFileName(dataIntent.getData());
                 InputStream inputStream = getContentResolver().openInputStream(dataIntent.getData());
-                UploadTask uploadTask = storageReference.child("file").child("file"+System.currentTimeMillis()).putStream(inputStream);
+
+
+                UploadTask uploadTask = storageReference.child("file").child(nameFile).putStream(inputStream);
                 uploadTask.addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
@@ -283,22 +287,12 @@ public class ChatMessageActivity extends AppCompatActivity {
                         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                             @Override
                             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                Task task = taskSnapshot.getMetadata().getReference().getDownloadUrl();
-
-                                task.addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                    @Override
-                                    public void onSuccess(Uri uri) {
-                                        if (task.isSuccessful()) {
-                                            String content = uri.toString();
-                                            String sender = sharedPreferences.getString("uname", "robocon321");
-                                            boolean status = false;
-                                            String typeContent = "File";
-                                            Message message = new Message(sender, content, status, typeContent);
-                                            databaseReference.child("chat").child(idBoxMessage).child("message").push().setValue(message);
-                                        } else
-                                            Log.e("Error", "Uncompleted!");
-                                    }
-                                });
+                                String content = taskSnapshot.getMetadata().getName();
+                                String sender = sharedPreferences.getString("uname", "robocon321");
+                                boolean status = false;
+                                String typeContent = "File";
+                                Message message = new Message(sender, content, status, typeContent);
+                                databaseReference.child("chat").child(idBoxMessage).child("message").push().setValue(message);
                             }
                         });
                     }
@@ -343,5 +337,27 @@ public class ChatMessageActivity extends AppCompatActivity {
                 });
             }
         });
+    }
+
+    public String getFileName(Uri uri) {
+        String result = null;
+        if (uri.getScheme().equals("content")) {
+            Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+            try {
+                if (cursor != null && cursor.moveToFirst()) {
+                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+        if (result == null) {
+            result = uri.getPath();
+            int cut = result.lastIndexOf('/');
+            if (cut != -1) {
+                result = result.substring(cut + 1);
+            }
+        }
+        return result;
     }
 }

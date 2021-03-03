@@ -1,8 +1,13 @@
 package com.example.tchatker.adapter;
 
+import android.app.DownloadManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.net.Uri;
+import android.os.Environment;
 import android.text.Layout;
+import android.text.util.Linkify;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,14 +24,25 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.tchatker.R;
 import com.example.tchatker.model.Account;
 import com.example.tchatker.model.Message;
+import com.google.android.gms.auth.api.signin.internal.Storage;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+
+import me.saket.bettermovementmethod.BetterLinkMovementMethod;
 
 public class MessageRecyclerViewAdapter extends RecyclerView.Adapter<MessageRecyclerViewAdapter.ViewHolder> {
     final private int TYPE_TEXT_VIEW = 0;
@@ -37,7 +53,9 @@ public class MessageRecyclerViewAdapter extends RecyclerView.Adapter<MessageRecy
     final private int RECEIVER = 32;
 
     final FirebaseDatabase database;
-    final DatabaseReference reference;
+    final DatabaseReference databaseReference;
+    final FirebaseStorage storage;
+    final StorageReference storageReference;
     final String uname;
 
 
@@ -49,7 +67,9 @@ public class MessageRecyclerViewAdapter extends RecyclerView.Adapter<MessageRecy
         this.context = context;
 
         database = FirebaseDatabase.getInstance();
-        reference = database.getReference("user");
+        databaseReference = database.getReference();
+        storage = FirebaseStorage.getInstance();
+        storageReference = storage.getReference();
 
         SharedPreferences sharedPreferences = context.getSharedPreferences("login", Context.MODE_PRIVATE);
         uname = sharedPreferences.getString("uname","robocon321");
@@ -82,7 +102,7 @@ public class MessageRecyclerViewAdapter extends RecyclerView.Adapter<MessageRecy
         else
             holder.txtStatus.setText("Chưa xem");
 
-        reference.orderByChild("uname").equalTo(message.getSender()).addValueEventListener(new ValueEventListener() {
+        databaseReference.child("user").orderByChild("uname").equalTo(message.getSender()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for (DataSnapshot item : snapshot.getChildren()){
@@ -104,6 +124,13 @@ public class MessageRecyclerViewAdapter extends RecyclerView.Adapter<MessageRecy
             case TYPE_TEXT_VIEW:
                 view = new TextView(context);
                 ((TextView) view).setText(content);
+                BetterLinkMovementMethod.linkify(Linkify.ALL, (TextView) view).setOnLinkClickListener(new BetterLinkMovementMethod.OnLinkClickListener() {
+                    @Override
+                    public boolean onClick(TextView textView, String url) {
+                        Toast.makeText(context, url+"", Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
+                });
                 break;
             case TYPE_IMAGE_VIEW:
                 view = new ImageView(context);
@@ -112,10 +139,34 @@ public class MessageRecyclerViewAdapter extends RecyclerView.Adapter<MessageRecy
             case TYPE_FILE_VIEW:
                 view = new TextView(context);
                 ((TextView) view).setText(content);
+                ((TextView) view).setTextColor(Color.parseColor("#03A9F4"));
+                view.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        storageReference.child("file/"+content).getDownloadUrl()
+                                .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                    @Override
+                                    public void onSuccess(Uri uri) {
+                                        int index = content.lastIndexOf('.');
+                                        String fileName = content.substring(0, index);
+                                        String extend = content.substring(index, content.length());
+                                        String des = context.getApplicationInfo().dataDir;
+                                        String url = uri.toString();
+                                        downloadFile(context, fileName, extend, des, url);
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Log.e("Error", e.getMessage());
+                                    }
+                                });
+                    }
+                });
                 break;
             case TYPE_EMOJI_VIEW:
                 view = new TextView(context);
-                ((TextView) view).setText("TYPE_VIDEO_VIEW");
+                ((TextView) view).setText("TYPE_EMOJI_VIEW");
                 break;
             default:
                 view = new TextView(context);
@@ -157,6 +208,19 @@ public class MessageRecyclerViewAdapter extends RecyclerView.Adapter<MessageRecy
             default:
                 return -1;
         }
+    }
+
+    public void downloadFile(Context context, String fileName, String fileExtension, String destinationDirectory, String url) {
+
+        DownloadManager downloadmanager = (DownloadManager) context.
+                getSystemService(Context.DOWNLOAD_SERVICE);
+        Uri uri = Uri.parse(url);
+        DownloadManager.Request request = new DownloadManager.Request(uri);
+
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        request.setDestinationInExternalFilesDir(context, destinationDirectory, fileName + fileExtension);
+
+        downloadmanager.enqueue(request);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
