@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -37,12 +38,15 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 
 public class ChatMessageActivity extends AppCompatActivity {
     int REQ_GET_IMAGE = 100;
+    int REQ_PICK_IMAGE = 101;
 
     FirebaseDatabase database;
     DatabaseReference databaseReference;
@@ -215,47 +219,71 @@ public class ChatMessageActivity extends AppCompatActivity {
                 startActivityForResult(intent, REQ_GET_IMAGE);
             }
         });
+
+        imgPicture.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent, "Select Picture"), REQ_PICK_IMAGE);
+            }
+        });
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent dataIntent) {
         super.onActivityResult(requestCode, resultCode, dataIntent);
-        if(requestCode == REQ_GET_IMAGE && resultCode == RESULT_OK && dataIntent != null){
-            Bitmap bitmap = (Bitmap) dataIntent.getExtras().get("data");
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-            byte[] data = baos.toByteArray();
-
-            Calendar calendar = Calendar.getInstance();
-
-            UploadTask uploadTask = storageReference.child("image").child("image"+calendar.getTimeInMillis()).putBytes(data);
-            uploadTask.addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception exception) {
-                    Log.e("Error", exception.getMessage());
-                }
-            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    Task task = taskSnapshot.getMetadata().getReference().getDownloadUrl();
-
-                    task.addOnSuccessListener(new OnSuccessListener<Uri>() {
-                        @Override
-                        public void onSuccess(Uri uri) {
-                            if(task.isSuccessful()) {
-                                String content = uri.toString();
-                                String sender = sharedPreferences.getString("uname","robocon321");
-                                boolean status = false;
-                                String typeContent = "Image";
-                                Message message = new Message(sender, content, status, typeContent);
-                                databaseReference.child("chat").child(idBoxMessage).child("message").push().setValue(message);
-                            } else
-                                Log.e("Error","Uncompleted!");
-                        }
-                    });
-                }
-            });
-
+        if (requestCode == REQ_GET_IMAGE && resultCode == RESULT_OK && dataIntent != null) {
+                Bitmap bitmap = (Bitmap) dataIntent.getExtras().get("data");
+                uploadImageBitmap(bitmap);
+            }
+        else if (requestCode == REQ_PICK_IMAGE && resultCode == RESULT_OK && dataIntent != null) {
+            Bitmap bitmap;
+            try {
+                InputStream inputStream = getContentResolver().openInputStream(dataIntent.getData());
+                bitmap = BitmapFactory.decodeStream(inputStream);
+            } catch (FileNotFoundException e) {
+                Log.e("Error", e.getMessage());
+                return;
+            }
+            uploadImageBitmap(bitmap);
         }
+    }
+
+    public void uploadImageBitmap(Bitmap bitmap){
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        byte[] data = baos.toByteArray();
+
+        Calendar calendar = Calendar.getInstance();
+
+        UploadTask uploadTask = storageReference.child("image").child("image" + calendar.getTimeInMillis()).putBytes(data);
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                Log.e("Error", exception.getMessage());
+            }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                Task task = taskSnapshot.getMetadata().getReference().getDownloadUrl();
+
+                task.addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        if (task.isSuccessful()) {
+                            String content = uri.toString();
+                            String sender = sharedPreferences.getString("uname", "robocon321");
+                            boolean status = false;
+                            String typeContent = "Image";
+                            Message message = new Message(sender, content, status, typeContent);
+                            databaseReference.child("chat").child(idBoxMessage).child("message").push().setValue(message);
+                        } else
+                            Log.e("Error", "Uncompleted!");
+                    }
+                });
+            }
+        });
     }
 }
