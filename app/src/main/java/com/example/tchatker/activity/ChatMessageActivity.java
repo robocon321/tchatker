@@ -38,7 +38,9 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -47,6 +49,7 @@ import java.util.Collections;
 public class ChatMessageActivity extends AppCompatActivity {
     int REQ_GET_IMAGE = 100;
     int REQ_PICK_IMAGE = 101;
+    int REQ_GET_FILE = 102;
 
     FirebaseDatabase database;
     DatabaseReference databaseReference;
@@ -229,6 +232,15 @@ public class ChatMessageActivity extends AppCompatActivity {
                 startActivityForResult(Intent.createChooser(intent, "Select Picture"), REQ_PICK_IMAGE);
             }
         });
+
+        imgAttach.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("*/*");
+                startActivityForResult(intent, REQ_GET_FILE);
+            }
+        });
     }
 
     @Override
@@ -248,6 +260,52 @@ public class ChatMessageActivity extends AppCompatActivity {
                 return;
             }
             uploadImageBitmap(bitmap);
+        }else if(requestCode == REQ_GET_FILE && resultCode == RESULT_OK && dataIntent != null){
+            String path = dataIntent.getData().getPath();
+            try {
+                InputStream inputStream = getContentResolver().openInputStream(dataIntent.getData());
+                UploadTask uploadTask = storageReference.child("file").child("file"+System.currentTimeMillis()).putStream(inputStream);
+                uploadTask.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("Error", e.getMessage());
+                    }
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        Task task = taskSnapshot.getMetadata().getReference().getDownloadUrl();
+
+                        uploadTask.addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception exception) {
+                                Log.e("Error", exception.getMessage());
+                            }
+                        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                Task task = taskSnapshot.getMetadata().getReference().getDownloadUrl();
+
+                                task.addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                    @Override
+                                    public void onSuccess(Uri uri) {
+                                        if (task.isSuccessful()) {
+                                            String content = uri.toString();
+                                            String sender = sharedPreferences.getString("uname", "robocon321");
+                                            boolean status = false;
+                                            String typeContent = "File";
+                                            Message message = new Message(sender, content, status, typeContent);
+                                            databaseReference.child("chat").child(idBoxMessage).child("message").push().setValue(message);
+                                        } else
+                                            Log.e("Error", "Uncompleted!");
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            } catch (IOException e) {
+                Log.e("Error", e.getMessage());
+            }
         }
     }
 

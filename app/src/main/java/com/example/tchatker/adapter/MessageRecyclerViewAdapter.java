@@ -31,7 +31,7 @@ import java.util.ArrayList;
 public class MessageRecyclerViewAdapter extends RecyclerView.Adapter<MessageRecyclerViewAdapter.ViewHolder> {
     final private int TYPE_TEXT_VIEW = 0;
     final private int TYPE_IMAGE_VIEW = 2;
-    final private int TYPE_VIDEO_VIEW = 4;
+    final private int TYPE_EMOJI_VIEW = 4;
     final private int TYPE_FILE_VIEW = 8;
     final private int SENDER = 16;
     final private int RECEIVER = 32;
@@ -111,9 +111,9 @@ public class MessageRecyclerViewAdapter extends RecyclerView.Adapter<MessageRecy
                 break;
             case TYPE_FILE_VIEW:
                 view = new TextView(context);
-                ((TextView) view).setText("TYPE_FILE_VIEW");
+                ((TextView) view).setText(content);
                 break;
-            case TYPE_VIDEO_VIEW:
+            case TYPE_EMOJI_VIEW:
                 view = new TextView(context);
                 ((TextView) view).setText("TYPE_VIDEO_VIEW");
                 break;
@@ -151,7 +151,7 @@ public class MessageRecyclerViewAdapter extends RecyclerView.Adapter<MessageRecy
             case "Image":
                 return result += TYPE_IMAGE_VIEW;
             case "Video":
-                return result += TYPE_VIDEO_VIEW;
+                return result += TYPE_EMOJI_VIEW;
             case "File":
                 return result += TYPE_FILE_VIEW;
             default:
