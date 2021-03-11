@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -71,10 +72,10 @@ public class FriendDirectoryFragment extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for(DataSnapshot item : snapshot.getChildren()){
+                    accounts.clear();
                     for(DataSnapshot itemFriend : item.child("friends").getChildren()){
                         String unameFriend = itemFriend.getValue().toString();
-
-                        reference.orderByChild("uname").equalTo(unameFriend).addValueEventListener(new ValueEventListener() {
+                        reference.orderByChild("uname").equalTo(unameFriend).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot snapshotFriend) {
                                 for (DataSnapshot item : snapshotFriend.getChildren()){

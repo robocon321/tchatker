@@ -4,11 +4,14 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.ViewPager;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
 
 import com.example.tchatker.R;
 import com.example.tchatker.adapter.HomeViewPagerAdapter;
+import com.example.tchatker.service.CallService;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class HomeActivity extends AppCompatActivity {
@@ -82,5 +85,15 @@ public class HomeActivity extends AppCompatActivity {
                 return true;
             }
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        SharedPreferences sharedPreferences = getSharedPreferences("login", MODE_PRIVATE);
+        String uname = sharedPreferences.getString("uname", "roobocon321");
+        Intent intent = new Intent(this, CallService.class);
+        intent.putExtra("uname", uname);
+        startService(intent);
     }
 }
