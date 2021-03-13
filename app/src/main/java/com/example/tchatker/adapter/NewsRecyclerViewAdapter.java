@@ -1,6 +1,7 @@
 package com.example.tchatker.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.util.Log;
@@ -81,6 +82,20 @@ public class NewsRecyclerViewAdapter extends RecyclerView.Adapter<NewsRecyclerVi
                             Log.e("Error", error.getMessage());
                         }
                     });
+
+                    reference.child(item.getKey()).child("news").child(itemNews.getId()).child("comments").addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            holder.txtComment.setText(snapshot.getChildrenCount()+"");
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+                            Log.e("Error", error.getMessage());
+                        }
+                    });
+
+
                 }
             }
 
@@ -150,6 +165,13 @@ public class NewsRecyclerViewAdapter extends RecyclerView.Adapter<NewsRecyclerVi
                             Log.e("Error", error.getMessage());
                         }
                     });
+                }
+            });
+
+            txtComment.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
                 }
             });
         }
