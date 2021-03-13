@@ -1,6 +1,8 @@
 package com.example.tchatker.model;
 
-public class Comment {
+import java.io.Serializable;
+
+public class Comment implements Serializable {
     private String uname;
     private String content;
     private Time time;

@@ -128,7 +128,13 @@ public class NewsFragment extends Fragment {
                             public void onDataChange(@NonNull DataSnapshot snapshot) {
                                 for(DataSnapshot itemSnapshot : snapshot.getChildren()){
                                     for(DataSnapshot newsSnapshot : itemSnapshot.child("news").getChildren()){
-                                        News itemNews = newsSnapshot.getValue(News.class);
+                                        News itemNews = new News();
+                                        itemNews.setContent(newsSnapshot.child("content").getValue(String.class));
+                                        itemNews.setTime(newsSnapshot.child("time").getValue(Time.class));
+                                        itemNews.setTypeContent(newsSnapshot.child("typeContent").getValue(String.class));
+                                        itemNews.setText(newsSnapshot.child("text").getValue(String.class));
+                                        itemNews.setNewsStyle(newsSnapshot.child("newsStyle").getValue(NewsStyle.class));
+
                                         itemNews.setId(newsSnapshot.getKey());
                                         itemNews.setUname(itemSnapshot.child("uname").getValue(String.class));
                                         itemNews.setLikes(new ArrayList<Like>());

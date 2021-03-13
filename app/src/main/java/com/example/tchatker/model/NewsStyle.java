@@ -1,6 +1,8 @@
 package com.example.tchatker.model;
 
-public class NewsStyle {
+import java.io.Serializable;
+
+public class NewsStyle implements Serializable {
     private String background;
     private String color;
 

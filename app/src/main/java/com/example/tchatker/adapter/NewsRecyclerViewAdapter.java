@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.tchatker.R;
+import com.example.tchatker.activity.CommentActivity;
 import com.example.tchatker.model.Like;
 import com.example.tchatker.model.News;
 import com.example.tchatker.model.Time;
@@ -65,6 +66,8 @@ public class NewsRecyclerViewAdapter extends RecyclerView.Adapter<NewsRecyclerVi
                 for(DataSnapshot item: snapshot.getChildren()){
                     holder.txtName.setText(item.child("name").getValue(String.class));
                     Picasso.get().load(item.child("avatar").getValue(String.class)).into(holder.imgAvatar);
+                    Time time = itemNews.getTime();
+                    holder.txtTime.setText(time.toNow());
 
                     reference.child(item.getKey()).child("news").child(itemNews.getId()).child("likes").addValueEventListener(new ValueEventListener() {
                         @Override
@@ -132,11 +135,13 @@ public class NewsRecyclerViewAdapter extends RecyclerView.Adapter<NewsRecyclerVi
             txtText = itemView.findViewById(R.id.txtText);
             layoutMain = itemView.findViewById(R.id.layoutMain);
 
+            Log.d("AAAA", getAdapterPosition()+"");
+
             txtLike.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Like like = new Like(uname, new Time());
                     News itemNews = news.get(getAdapterPosition());
+                    Like like = new Like(uname, new Time());
                     reference.orderByChild("uname").equalTo(itemNews.getUname()).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -171,7 +176,11 @@ public class NewsRecyclerViewAdapter extends RecyclerView.Adapter<NewsRecyclerVi
             txtComment.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    News itemNews = news.get(getAdapterPosition());
 
+                    Intent intent = new Intent(context, CommentActivity.class);
+                    intent.putExtra("itemNews", itemNews);
+                    context.startActivity(intent);
                 }
             });
         }

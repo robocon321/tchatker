@@ -27,9 +27,11 @@
                     android:layout_marginBottom="10dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
-                    <ImageView
+                    <de.hdodenhof.circleimageview.CircleImageView
                         android:id="@+id/imgAvatar"
                         android:src="@drawable/user"
+                        app:civ_border_width="1dp"
+                        app:civ_border_color="@color/black"
                         android:layout_marginRight="10dp"
                         android:layout_width="50dp"
                         android:layout_height="50dp"/>
@@ -72,20 +74,26 @@
                 </RelativeLayout>
             </RelativeLayout>
     </RelativeLayout>
-    <androidx.recyclerview.widget.RecyclerView
-        android:background="#ECECEC"
+    <LinearLayout
         android:layout_below="@+id/layoutNews"
         android:layout_above="@id/layoutSendComment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent">
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewComment"
+            android:background="#ECECEC"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </LinearLayout>
     <RelativeLayout
         android:id="@+id/layoutSendComment"
         android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <androidx.emoji.widget.EmojiEditText
+        <EditText
             android:id="@+id/editComment"
             android:hint="Comment"
+            android:layout_toLeftOf="@+id/imgComment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
         <ImageView

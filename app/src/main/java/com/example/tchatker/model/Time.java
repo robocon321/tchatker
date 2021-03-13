@@ -1,9 +1,10 @@
 package com.example.tchatker.model;
 
+import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
 
-public class Time {
+public class Time implements Serializable {
     private int year;
     private int month;
     private int day;
@@ -85,6 +86,47 @@ public class Time {
 
     public void setSecond(int second) {
         this.second = second;
+    }
+
+    public String toNow() {
+        String result = "";
+
+        Calendar calendar = Calendar.getInstance();
+        int yearNow = calendar.get(Calendar.YEAR);
+        int monthNow = calendar.get(Calendar.MONTH)+1;
+        int dayNow = calendar.get(Calendar.DATE);
+        int hourNow = calendar.get(Calendar.HOUR_OF_DAY);
+        int minuteNow = calendar.get(Calendar.MINUTE);
+        int secondNow = calendar.get(Calendar.SECOND);
+
+        if(yearNow - year == 1)
+            result = "1 year ago";
+        else if(yearNow - year > 1)
+            result = (yearNow - year) + " years ago";
+        else if(monthNow - month == 1)
+            result = "1 month ago";
+        else if(monthNow - month > 1 )
+            result = (monthNow - month) + " months ago";
+        else if(dayNow - day == 1)
+            result = "1 day ago";
+        else if(dayNow - day > 1)
+            result = (dayNow - day) + " days ago";
+        else if(hourNow - hour == 1)
+            result = "1 hour ago";
+        else if(hourNow - hour > 1)
+            result = (hourNow - hour)+ " hours ago";
+        else if(minuteNow - minute == 1)
+            result = "1 minute ago";
+        else if(minuteNow - minute > 1)
+            result = (minuteNow - minute)+" minutes ago";
+        else if(secondNow - second == 1)
+            result = "1 second ago";
+        else if(secondNow - second == 0)
+            result = "just finished";
+        else
+            result = (secondNow - second) + " seconds ago";
+
+        return result;
     }
 
     @Override

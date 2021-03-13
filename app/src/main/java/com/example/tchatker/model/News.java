@@ -1,9 +1,10 @@
 package com.example.tchatker.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 
-public class News implements Comparable<News> {
+public class News implements Comparable<News>, Serializable {
     private String id;
     private String uname;
     private Time time;

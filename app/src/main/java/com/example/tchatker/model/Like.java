@@ -1,6 +1,8 @@
 package com.example.tchatker.model;
 
-public class Like {
+import java.io.Serializable;
+
+public class Like implements Serializable {
     private String uname;
     private Time time;
 
