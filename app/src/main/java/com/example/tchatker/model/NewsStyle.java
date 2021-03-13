@@ -9,7 +9,10 @@ public class NewsStyle {
         this.color = color;
     }
 
-    public NewsStyle() {}
+    public NewsStyle() {
+        this.background = "#ffffff";
+        this.color = "#000000";
+    }
 
     public String getBackground() {
         return background;

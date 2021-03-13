@@ -1,10 +1,11 @@
 package com.example.tchatker.model;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 
-public class News {
-    private String name;
-    private String avatar;
+public class News implements Comparable<News> {
+    private String id;
+    private String uname;
     private Time time;
     private String text;
     private String content;
@@ -13,9 +14,29 @@ public class News {
     private ArrayList<Like> likes;
     private ArrayList<Comment> comments;
 
-    public News(String name, String avatar, Time time, String text, String content, String typeContent, NewsStyle newsStyle, ArrayList<Like> likes, ArrayList<Comment> comments) {
-        this.name = name;
-        this.avatar = avatar;
+    public News(String id, String uname, Time time, String text, String content, String typeContent, NewsStyle newsStyle, ArrayList<Like> likes, ArrayList<Comment> comments) {
+        this.id = id;
+        this.uname = uname;
+        this.time = time;
+        this.text = text;
+        this.content = content;
+        this.typeContent = typeContent;
+        this.newsStyle = newsStyle;
+        this.likes = likes;
+        this.comments = comments;
+    }
+
+    public News(Time time, String text, String content, String typeContent, NewsStyle newsStyle) {
+        this.time = time;
+        this.text = text;
+        this.content = content;
+        this.typeContent = typeContent;
+        this.newsStyle = newsStyle;
+        this.likes = new ArrayList<>();
+        this.comments = new ArrayList<>();
+    }
+
+    public News(Time time, String text, String content, String typeContent, NewsStyle newsStyle, ArrayList<Like> likes, ArrayList<Comment> comments) {
         this.time = time;
         this.text = text;
         this.content = content;
@@ -26,22 +47,6 @@ public class News {
     }
 
     public News() {
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getAvatar() {
-        return avatar;
-    }
-
-    public void setAvatar(String avatar) {
-        this.avatar = avatar;
     }
 
     public Time getTime() {
@@ -100,11 +105,29 @@ public class News {
         this.comments = comments;
     }
 
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getUname() {
+        return uname;
+    }
+
+    public void setUname(String uname) {
+        this.uname = uname;
+    }
+
+
     @Override
     public String toString() {
         return "News{" +
-                "name='" + name + '\'' +
-                ", avatar='" + avatar + '\'' +
+                "id='" + id + '\'' +
+                ", uname='" + uname + '\'' +
                 ", time=" + time +
                 ", text='" + text + '\'' +
                 ", content='" + content + '\'' +
@@ -113,5 +136,44 @@ public class News {
                 ", likes=" + likes +
                 ", comments=" + comments +
                 '}';
+    }
+
+    @Override
+    public int compareTo(News o) {
+        if(time.getYear() > o.getTime().getYear())
+            return 1;
+        else if(time.getYear() < o.getTime().getYear())
+            return -1;
+        else{
+            if(time.getMonth() > o.getTime().getMonth())
+                return 1;
+            else if(time.getMonth() < o.getTime().getMonth())
+                return -1;
+            else {
+                if(time.getDay() > o.getTime().getDay())
+                    return 1;
+                else if(time.getDay() < o.getTime().getDay())
+                    return -1;
+                else{
+                    if(time.getHour() > o.getTime().getHour())
+                        return 1;
+                    else if(time.getHour() < o.getTime().getHour())
+                        return -1;
+                    else{
+                        if(time.getMinute() > o.getTime().getMinute())
+                            return 1;
+                        else if(time.getMinute() < o.getTime().getMinute())
+                            return -1;
+                        else{
+                            if(time.getSecond() > o.getTime().getSecond())
+                                return 1;
+                            else
+                                return -1;
+                        }
+                    }
+                }
+            }
+        }
+
     }
 }

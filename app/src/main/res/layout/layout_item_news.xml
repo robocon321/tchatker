@@ -2,13 +2,14 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <androidx.cardview.widget.CardView
+        android:layout_margin="10dp"
         app:cardBackgroundColor="@color/white"
         app:cardCornerRadius="8dp"
         app:cardElevation="8dp"
-        app:contentPadding="10dp"
+        app:contentPadding="5dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <RelativeLayout
@@ -29,7 +30,7 @@
                     android:id="@+id/txtName"
                     android:text="Join Nguyễn"
                     android:textStyle="bold"
-                    android:textColor="black"
+                    android:textColor="@color/black"
                     android:backgroundTint="@color/white"
                     android:layout_toRightOf="@id/imgAvatar"
                     android:layout_marginBottom="3dp"

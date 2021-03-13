@@ -69,7 +69,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String uname = editUname.getText().toString();
                 String pwd = editPwd.getText().toString();
-                reference.orderByChild("uname").equalTo(uname).addValueEventListener(new ValueEventListener() {
+                reference.orderByChild("uname").equalTo(uname).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if(snapshot == null){
