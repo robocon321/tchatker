@@ -49,18 +49,16 @@ public class CallService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String uname = intent.getStringExtra("uname");
-        reference.orderByChild("uname").equalTo(uname).addValueEventListener(new ValueEventListener() {
+        reference.child(uname).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for(DataSnapshot item : snapshot.getChildren()){
-                    if(item.hasChild("income") && !isStartCall){
+                    if(snapshot.hasChild("income") && !isStartCall){
                         isStartCall = true;
-                        IncomeInfo incomeInfo = item.child("income").getValue(IncomeInfo.class);
-                        reference.orderByChild("uname").equalTo(incomeInfo.getUname()).addListenerForSingleValueEvent(new ValueEventListener() {
+                        IncomeInfo incomeInfo = snapshot.child("income").getValue(IncomeInfo.class);
+                        reference.child(incomeInfo.getUname()).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                for(DataSnapshot item : snapshot.getChildren()){
-                                    Account account = item.getValue(Account.class);
+                                    Account account = snapshot.getValue(Account.class);
                                     if(incomeInfo.isVideo()){
                                         Intent intentX = new Intent(CallService.this, ReceiveCallVideoActivity.class);
                                         intentX.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -75,7 +73,6 @@ public class CallService extends Service {
                                         startActivity(intentX);
                                     }
                                 }
-                            }
 
                             @Override
                             public void onCancelled(@NonNull DatabaseError error) {
@@ -83,7 +80,6 @@ public class CallService extends Service {
                             }
                         });
                     }
-                }
             }
 
             @Override

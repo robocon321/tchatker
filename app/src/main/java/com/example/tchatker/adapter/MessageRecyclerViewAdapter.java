@@ -102,13 +102,11 @@ public class MessageRecyclerViewAdapter extends RecyclerView.Adapter<MessageRecy
         else
             holder.txtStatus.setText("Chưa xem");
 
-        databaseReference.child("user").orderByChild("uname").equalTo(message.getSender()).addValueEventListener(new ValueEventListener() {
+        databaseReference.child("user").child(message.getSender()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot item : snapshot.getChildren()){
-                    Account account = item.getValue(Account.class);
-                    Picasso.get().load(account.getAvatar()).into(holder.imgAvatar);
-                }
+                Account account = snapshot.getValue(Account.class);
+                Picasso.get().load(account.getAvatar()).into(holder.imgAvatar);
             }
 
             @Override

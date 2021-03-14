@@ -69,15 +69,15 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String uname = editUname.getText().toString();
                 String pwd = editPwd.getText().toString();
-                reference.orderByChild("uname").equalTo(uname).addListenerForSingleValueEvent(new ValueEventListener() {
+
+                reference.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        if(snapshot == null){
+                        if(!snapshot.hasChild(uname)){
                             editUname.setError("Not exists this username");
                             editUname.requestFocus();
                         }else{
-                            for (DataSnapshot item : snapshot.getChildren()){
-                                Account account = item.getValue(Account.class);
+                                Account account = snapshot.child("uname").getValue(Account.class);
                                 if (!pwd.equals(account.getPwd())) {
                                     editPwd.setError("Incorrect password");
                                     editPwd.requestFocus();
@@ -88,7 +88,6 @@ public class LoginActivity extends AppCompatActivity {
 
                                     Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                                     startActivity(intent);
-                                }
                             }
                         }
                     }

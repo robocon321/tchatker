@@ -68,29 +68,25 @@ public class FriendDirectoryFragment extends Fragment {
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(getActivity(), LinearLayoutManager.VERTICAL);
         recyclerView.addItemDecoration(dividerItemDecoration);
 
-        reference.orderByChild("uname").equalTo(uname).addValueEventListener(new ValueEventListener() {
+        reference.child(uname).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for(DataSnapshot item : snapshot.getChildren()){
-                    accounts.clear();
-                    for(DataSnapshot itemFriend : item.child("friends").getChildren()){
-                        String unameFriend = itemFriend.getValue().toString();
-                        reference.orderByChild("uname").equalTo(unameFriend).addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot snapshotFriend) {
-                                for (DataSnapshot item : snapshotFriend.getChildren()){
-                                    Account account = item.getValue(Account.class);
-                                    accounts.add(account);
-                                }
-                                adapter.notifyDataSetChanged();
-                            }
+                accounts.clear();
+                for(DataSnapshot itemFriend : snapshot.child("friends").getChildren()){
+                    String unameFriend = itemFriend.getValue().toString();
+                    reference.child(unameFriend).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshotFriend) {
+                                Account account = snapshotFriend.getValue(Account.class);
+                                accounts.add(account);
+                            adapter.notifyDataSetChanged();
+                        }
 
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError errorFriend) {
-                                Log.d("Error", errorFriend.getMessage());
-                            }
-                        });
-                    }
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError errorFriend) {
+                            Log.d("Error", errorFriend.getMessage());
+                        }
+                    });
                 }
             }
 

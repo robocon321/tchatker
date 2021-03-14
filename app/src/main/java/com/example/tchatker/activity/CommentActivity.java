@@ -3,6 +3,7 @@ package com.example.tchatker.activity;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -83,39 +84,34 @@ public class CommentActivity extends AppCompatActivity {
         recyclerViewComment.setHasFixedSize(true);
         recyclerViewComment.setLayoutManager(new LinearLayoutManager(this));
         recyclerViewComment.setAdapter(adapter);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this, LinearLayoutManager.VERTICAL);
+        recyclerViewComment.addItemDecoration(dividerItemDecoration);
 
-        reference.orderByChild("uname").equalTo(itemNews.getUname()).addValueEventListener(new ValueEventListener() {
+        reference.child(itemNews.getUname()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for(DataSnapshot itemSnapshot: snapshot.getChildren()){
-                    String avatar = itemSnapshot.child("avatar").getValue(String.class);
-                    String name = itemSnapshot.child("name").getValue(String.class);
+                    String avatar = snapshot.child("avatar").getValue(String.class);
+                    String name = snapshot.child("name").getValue(String.class);
 
                     Picasso.get().load(avatar).into(imgAvatar);
                     txtName.setText(name);
                     txtTime.setText(itemNews.getTime().toNow());
 
-                    reference.child(itemSnapshot.getKey()).child("news").child(itemNews.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            String text = snapshot.child("text").getValue(String.class);
-                            txtText.setText(text);
-                            comments.clear();
-                            for(DataSnapshot commentSnapshot : snapshot.child("comments").getChildren()){
-                                Comment comment = commentSnapshot.getValue(Comment.class);
-                                comments.add(comment);
-                            }
-                            adapter.notifyDataSetChanged();
-                            toolbar.setTitle("Comment("+comments.size()+")");
-                        }
+                    Log.d("AAAA", itemNews.toString());
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-                            Log.e("Error", error.getMessage());
-                        }
-                    });
+                    String text = snapshot.child("news").child(itemNews.getId()).child("text").getValue(String.class);
+                    txtText.setText(text);
+
+                    comments.clear();
+
+                    for(DataSnapshot commentSnapshot : snapshot.child("news").child(itemNews.getId()).child("comments").getChildren()){
+                        Comment comment = commentSnapshot.getValue(Comment.class);
+                        comments.add(comment);
+                    }
+
+                    adapter.notifyDataSetChanged();
+                    toolbar.setTitle("Comment("+comments.size()+")");
                 }
-            }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
@@ -137,19 +133,7 @@ public class CommentActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String content = editComment.getText().toString();
                 Comment comment = new Comment(uname, content, new Time());
-                reference.orderByChild("uname").equalTo(itemNews.getUname()).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        for(DataSnapshot itemSnapshot : snapshot.getChildren()){
-                            reference.child(itemSnapshot.getKey()).child("news").child(itemNews.getId()).child("comments").push().setValue(comment);
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Log.e("Error", error.getMessage());
-                    }
-                });
+                reference.child(itemNews.getUname()).child("news").child(itemNews.getId()).child("comments").push().setValue(comment);
             }
         });
     }

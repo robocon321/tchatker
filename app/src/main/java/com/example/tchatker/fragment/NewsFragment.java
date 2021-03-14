@@ -73,6 +73,8 @@ public class NewsFragment extends Fragment {
 
     SharedPreferences sharedPreferences;
     String uname;
+    String typeContent = "NORMAL";
+    String newsId;
 
     @Nullable
     @Override
@@ -106,36 +108,33 @@ public class NewsFragment extends Fragment {
         recyclerViewNews.setHasFixedSize(true);
         recyclerViewNews.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        databaseReference.orderByChild("uname").equalTo(uname).addListenerForSingleValueEvent(new ValueEventListener() {
+        databaseReference.child(uname).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 news.clear();
-                for(DataSnapshot itemSnapshot:snapshot.getChildren()){
                     // My news
-                    for(DataSnapshot newsSnapshot:itemSnapshot.child("news").getChildren()){
+                    for(DataSnapshot newsSnapshot:snapshot.child("news").getChildren()){
                         News itemNews = newsSnapshot.getValue(News.class);
                         itemNews.setId(newsSnapshot.getKey());
-                        itemNews.setUname(itemSnapshot.child("uname").getValue(String.class));
+                        itemNews.setUname(snapshot.child("uname").getValue(String.class));
                         news.add(itemNews);
                     }
                     // Friend news
-                    for(DataSnapshot friendSnapshot: itemSnapshot.child("friends").getChildren()){
+                    for(DataSnapshot friendSnapshot: snapshot.child("friends").getChildren()){
                         String friendUname = friendSnapshot.getValue(String.class);
-                        databaseReference.orderByChild("uname").equalTo(friendUname).addListenerForSingleValueEvent(new ValueEventListener() {
+                        databaseReference.child(friendUname).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                for(DataSnapshot itemSnapshot : snapshot.getChildren()){
-                                    for(DataSnapshot newsSnapshot : itemSnapshot.child("news").getChildren()){
+                                    for(DataSnapshot newsSnapshot : snapshot.child("news").getChildren()){
                                         News itemNews = new News();
                                         itemNews.setTime(newsSnapshot.child("time").getValue(Time.class));
                                         itemNews.setTypeContent(newsSnapshot.child("typeContent").getValue(String.class));
                                         itemNews.setText(newsSnapshot.child("text").getValue(String.class));
 
                                         itemNews.setId(newsSnapshot.getKey());
-                                        itemNews.setUname(itemSnapshot.child("uname").getValue(String.class));
+                                        itemNews.setUname(snapshot.child("uname").getValue(String.class));
                                         news.add(itemNews);
                                     }
-                                }
                                 Collections.sort(news);
                                 adapter.notifyDataSetChanged();
                             }
@@ -146,8 +145,6 @@ public class NewsFragment extends Fragment {
                             }
                         });
                     }
-
-                }
             }
 
             @Override
@@ -163,24 +160,7 @@ public class NewsFragment extends Fragment {
         btnPost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String text = editText.getText().toString();
-                Time time = new Time();
-                String typeContent = "NORMAL";
-                News news = new News(time, text, typeContent);
-
-                databaseReference.orderByChild("uname").equalTo(uname).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        for(DataSnapshot itemSnapShot: snapshot.getChildren()){
-                            databaseReference.child(itemSnapShot.getKey()).child("news").push().setValue(news);
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Log.e("Error", error.getMessage());
-                    }
-                });
+                uploadNews();
             }
         });
 
@@ -200,6 +180,8 @@ public class NewsFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if(requestCode == REQ_GET_MULTI_IMG && resultCode == RESULT_OK && data!=null){
             if(data.getClipData() != null){
+                typeContent = "IMAGE";
+                uploadNews();
 
                 int count = data.getClipData().getItemCount();
 
@@ -209,43 +191,25 @@ public class NewsFragment extends Fragment {
                     try {
                         InputStream inputStream = getActivity().getContentResolver().openInputStream(imageUri);
                         Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                        uploadImageBitmap(bitmap);
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        Log.e("Error", e.getMessage());
                     }
                 }
             }
             else if(data.getData() != null){
+                typeContent = "IMAGE";
+
                 Uri imgUri = data.getData();
                 try {
                     InputStream inputStream = getActivity().getContentResolver().openInputStream(imgUri);
                     Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                    uploadImageBitmap(bitmap);
                 } catch (FileNotFoundException e) {
-                    e.printStackTrace();
+                    Log.e("Error", e.getMessage());
                 }
             }
         }
-    }
-
-    public String getFileName(Uri uri) {
-        String result = null;
-        if (uri.getScheme().equals("content")) {
-            Cursor cursor = getActivity().getContentResolver().query(uri, null, null, null, null);
-            try {
-                if (cursor != null && cursor.moveToFirst()) {
-                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
-                }
-            } finally {
-                cursor.close();
-            }
-        }
-        if (result == null) {
-            result = uri.getPath();
-            int cut = result.lastIndexOf('/');
-            if (cut != -1) {
-                result = result.substring(cut + 1);
-            }
-        }
-        return result;
     }
 
     public void uploadImageBitmap(Bitmap bitmap){
@@ -255,7 +219,7 @@ public class NewsFragment extends Fragment {
 
         Calendar calendar = Calendar.getInstance();
 
-        UploadTask uploadTask = storageReference.child("image").child("image" + calendar.getTimeInMillis()).putBytes(data);
+        UploadTask uploadTask = storageReference.child("image" + calendar.getTimeInMillis()).putBytes(data);
         uploadTask.addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception exception) {
@@ -271,13 +235,22 @@ public class NewsFragment extends Fragment {
                     public void onSuccess(Uri uri) {
                         if (task.isSuccessful()) {
                             String path = uri.toString();
-                            String uname = sharedPreferences.getString("uname", "robocon321");
-                            Log.d("AAA", path);
+                            databaseReference.child(uname).child("news").child(newsId).child("images").push().setValue(path);
                         } else
                             Log.e("Error", "Uncompleted!");
                     }
                 });
             }
         });
+    }
+
+    public void uploadNews(){
+        String text = editText.getText().toString();
+        Time time = new Time();
+        News itemNews = new News(time, text, typeContent);
+
+        DatabaseReference newsReference = databaseReference.child(uname).child("news").push();
+        newsId = newsReference.getKey();
+        newsReference.setValue(itemNews);
     }
 }

@@ -54,13 +54,11 @@ public class CommentRecyclerViewAdapter extends RecyclerView.Adapter<CommentRecy
         Comment comment = comments.get(position);
         holder.txtComment.setText(comment.getContent());
         holder.txtTime.setText(comment.getTime().toNow());
-        reference.orderByChild("uname").equalTo(comment.getUname()).addListenerForSingleValueEvent(new ValueEventListener() {
+        reference.child(comment.getUname()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for(DataSnapshot itemSnapshot: snapshot.getChildren()){
-                    Picasso.get().load(itemSnapshot.child("avatar").getValue(String.class)).into(holder.imgUser);
-                    holder.txtUser.setText(itemSnapshot.child("name").getValue(String.class));
-                }
+                Picasso.get().load(snapshot.child("avatar").getValue(String.class)).into(holder.imgUser);
+                holder.txtUser.setText(snapshot.child("name").getValue(String.class));
             }
 
             @Override

@@ -20,6 +20,10 @@ import com.example.tchatker.activity.CommentActivity;
 import com.example.tchatker.model.Like;
 import com.example.tchatker.model.News;
 import com.example.tchatker.model.Time;
+import com.google.android.flexbox.AlignContent;
+import com.google.android.flexbox.AlignItems;
+import com.google.android.flexbox.FlexWrap;
+import com.google.android.flexbox.FlexboxLayout;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -60,25 +64,50 @@ public class NewsRecyclerViewAdapter extends RecyclerView.Adapter<NewsRecyclerVi
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         News itemNews = news.get(position);
 
-        reference.orderByChild("uname").equalTo(itemNews.getUname()).addListenerForSingleValueEvent(new ValueEventListener() {
+        reference.child(itemNews.getUname()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for(DataSnapshot item: snapshot.getChildren()){
-                    holder.txtName.setText(item.child("name").getValue(String.class));
-                    Picasso.get().load(item.child("avatar").getValue(String.class)).into(holder.imgAvatar);
+                    holder.txtName.setText(snapshot.child("name").getValue(String.class));
+                    Picasso.get().load(snapshot.child("avatar").getValue(String.class)).into(holder.imgAvatar);
                     Time time = itemNews.getTime();
                     holder.txtTime.setText(time.toNow());
 
-                    reference.child(item.getKey()).child("news").child(itemNews.getId()).child("likes").addValueEventListener(new ValueEventListener() {
+                    reference.child(itemNews.getUname()).child("news").child(itemNews.getId()).addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            holder.txtLike.setText(snapshot.getChildrenCount()+"");
-                            if(snapshot.hasChild(uname)){
+                            // SnapshotLike
+                            DataSnapshot snapshotLike = snapshot.child("likes");
+                            holder.txtLike.setText(snapshotLike.getChildrenCount()+"");
+                            if(snapshotLike.hasChild(uname)){
                                 holder.txtLike.setCompoundDrawablesWithIntrinsicBounds(R.drawable.liked, 0, 0, 0);
                             }else{
                                 holder.txtLike.setCompoundDrawablesWithIntrinsicBounds(R.drawable.like, 0, 0, 0);
                             }
-                            holder.txtLike.setText(snapshot.getChildrenCount()+"");
+                            holder.txtLike.setText(snapshotLike.getChildrenCount()+"");
+
+                            // SnapshotComment
+                            DataSnapshot snapshotComment = snapshot.child("comments");
+                            holder.txtComment.setText(snapshotComment.getChildrenCount()+"");
+
+                            // set for flex content type
+                            String typeContent = itemNews.getTypeContent();
+                            if(typeContent.equals("IMAGE")){
+                                FlexboxLayout contentLayout = new FlexboxLayout(context);
+                                contentLayout.setFlexWrap(FlexWrap.WRAP);
+                                contentLayout.setLayoutParams(new FlexboxLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                                contentLayout.setAlignContent(AlignContent.FLEX_START);
+                                contentLayout.setAlignItems(AlignItems.FLEX_START);
+
+                                for(DataSnapshot snapshotImage : snapshot.child("images").getChildren()){
+                                    ImageView imgView = new ImageView(context);
+                                    Picasso.get().load(snapshotImage.getValue(String.class)).into(imgView);
+                                    contentLayout.addView(imgView);
+                                }
+
+                                holder.layoutMain.addView(contentLayout);
+                            }else {
+                                // Nothing else
+                            }
                         }
 
                         @Override
@@ -86,23 +115,7 @@ public class NewsRecyclerViewAdapter extends RecyclerView.Adapter<NewsRecyclerVi
                             Log.e("Error", error.getMessage());
                         }
                     });
-
-                    reference.child(item.getKey()).child("news").child(itemNews.getId()).child("comments").addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            holder.txtComment.setText(snapshot.getChildrenCount()+"");
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-                            Log.e("Error", error.getMessage());
-                        }
-                    });
-
-
                 }
-            }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Log.e("Error", error.getMessage());
@@ -136,27 +149,14 @@ public class NewsRecyclerViewAdapter extends RecyclerView.Adapter<NewsRecyclerVi
                 @Override
                 public void onClick(View v) {
                     News itemNews = news.get(getAdapterPosition());
-                    Like like = new Like(uname, new Time());
-                    reference.orderByChild("uname").equalTo(itemNews.getUname()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    DatabaseReference referenceLike = reference.child(itemNews.getUname()).child("news").child(itemNews.getId()).child("likes");
+                    referenceLike.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            for(DataSnapshot item : snapshot.getChildren()){
-                                reference.child(item.getKey()).child("news").child(itemNews.getId()).child("likes").addListenerForSingleValueEvent(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                        DatabaseReference referenceLike = reference.child(item.getKey()).child("news").child(itemNews.getId()).child("likes");
-                                        if(snapshot.hasChild(uname)){
-                                            referenceLike.removeValue();
-                                        }else{
-                                            referenceLike.child(uname).setValue(new Time());
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError error) {
-                                        Log.e("Error", error.getMessage());
-                                    }
-                                });
+                            if(snapshot.hasChild(uname)){
+                                referenceLike.removeValue();
+                            }else{
+                                referenceLike.child(uname).setValue(new Time());
                             }
                         }
 
