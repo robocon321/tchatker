@@ -116,8 +116,6 @@ public class NewsFragment extends Fragment {
                         News itemNews = newsSnapshot.getValue(News.class);
                         itemNews.setId(newsSnapshot.getKey());
                         itemNews.setUname(itemSnapshot.child("uname").getValue(String.class));
-                        itemNews.setLikes(new ArrayList<Like>());
-                        itemNews.setComments(new ArrayList<Comment>());
                         news.add(itemNews);
                     }
                     // Friend news
@@ -129,16 +127,12 @@ public class NewsFragment extends Fragment {
                                 for(DataSnapshot itemSnapshot : snapshot.getChildren()){
                                     for(DataSnapshot newsSnapshot : itemSnapshot.child("news").getChildren()){
                                         News itemNews = new News();
-                                        itemNews.setContent(newsSnapshot.child("content").getValue(String.class));
                                         itemNews.setTime(newsSnapshot.child("time").getValue(Time.class));
                                         itemNews.setTypeContent(newsSnapshot.child("typeContent").getValue(String.class));
                                         itemNews.setText(newsSnapshot.child("text").getValue(String.class));
-                                        itemNews.setNewsStyle(newsSnapshot.child("newsStyle").getValue(NewsStyle.class));
 
                                         itemNews.setId(newsSnapshot.getKey());
                                         itemNews.setUname(itemSnapshot.child("uname").getValue(String.class));
-                                        itemNews.setLikes(new ArrayList<Like>());
-                                        itemNews.setComments(new ArrayList<Comment>());
                                         news.add(itemNews);
                                     }
                                 }
@@ -171,10 +165,8 @@ public class NewsFragment extends Fragment {
             public void onClick(View v) {
                 String text = editText.getText().toString();
                 Time time = new Time();
-                String content = "";
-                String typeContent = "normal";
-                NewsStyle newsStyle = new NewsStyle();
-                News news = new News(time, text, content, typeContent, newsStyle);
+                String typeContent = "NORMAL";
+                News news = new News(time, text, typeContent);
 
                 databaseReference.orderByChild("uname").equalTo(uname).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override

@@ -72,6 +72,7 @@ public class NewsRecyclerViewAdapter extends RecyclerView.Adapter<NewsRecyclerVi
                     reference.child(item.getKey()).child("news").child(itemNews.getId()).child("likes").addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            holder.txtLike.setText(snapshot.getChildrenCount()+"");
                             if(snapshot.hasChild(uname)){
                                 holder.txtLike.setCompoundDrawablesWithIntrinsicBounds(R.drawable.liked, 0, 0, 0);
                             }else{
@@ -109,10 +110,6 @@ public class NewsRecyclerViewAdapter extends RecyclerView.Adapter<NewsRecyclerVi
         });
 
         holder.txtText.setText(itemNews.getText());
-        holder.txtText.setTextColor(Color.parseColor(itemNews.getNewsStyle().getColor()));
-        holder.txtLike.setText(itemNews.getLikes().size()+"");
-        holder.txtComment.setText(itemNews.getComments().size()+"");
-        holder.layoutMain.setBackgroundColor(Color.parseColor(itemNews.getNewsStyle().getBackground()));
     }
 
     @Override
@@ -134,8 +131,6 @@ public class NewsRecyclerViewAdapter extends RecyclerView.Adapter<NewsRecyclerVi
             txtComment = itemView.findViewById(R.id.txtComment);
             txtText = itemView.findViewById(R.id.txtText);
             layoutMain = itemView.findViewById(R.id.layoutMain);
-
-            Log.d("AAAA", getAdapterPosition()+"");
 
             txtLike.setOnClickListener(new View.OnClickListener() {
                 @Override
