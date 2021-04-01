@@ -29,6 +29,19 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     Button btnOTP, btnCancel;
     EditText editPhone;
     public static FirebaseAuth mAuth;
+    String uname;
+    String phone;
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Intent intent = getIntent();
+        phone = intent.getStringExtra("phoneNumber");
+        uname = intent.getStringExtra("uname");
+        if(phone != null){
+            sendOTP(phone);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,42 +77,47 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                     editPhone.setError("Phone number is required");
                     editPhone.requestFocus();
                     return ;
+                }else{
+                    sendOTP(phone);
                 }
-
-                PhoneAuthOptions options =
-                        PhoneAuthOptions.newBuilder(mAuth)
-                                .setPhoneNumber(phone)       // Phone number to verify
-                                .setTimeout(60L, TimeUnit.SECONDS) // Timeout and unit
-                                .setActivity(ForgotPasswordActivity.this)                 // Activity (for callback binding)
-                                .setCallbacks(mCallbacks)          // OnVerificationStateChangedCallbacks
-                                .build();
-                PhoneAuthProvider.verifyPhoneNumber(options);
-
             }
-            PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallbacks = new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
-                @Override
-                public void onVerificationCompleted(@NonNull PhoneAuthCredential phoneAuthCredential) {
-                    String code = phoneAuthCredential.getSmsCode();
-                    Log.d("code",code);
-                }
-
-                @Override
-                public void onVerificationFailed(@NonNull FirebaseException e) {
-                    Log.e("Error",e.getMessage());
-                    editPhone.setError("Incorrect format phone number");
-                }
-
-                @Override
-                public void onCodeSent(@NonNull String s, @NonNull PhoneAuthProvider.ForceResendingToken forceResendingToken) {
-                    super.onCodeSent(s, forceResendingToken);
-                    Log.d("s",s);
-                    Intent intent = new Intent(ForgotPasswordActivity.this, OTPActivity.class);
-                    intent.putExtra("code", s);
-                    intent.putExtra("phone", editPhone.getText().toString());
-                    startActivity(intent);
-                }
-            };
         });
+    }
+
+    public void sendOTP(String phone){
+        PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallbacks = new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+            @Override
+            public void onVerificationCompleted(@NonNull PhoneAuthCredential phoneAuthCredential) {
+                String code = phoneAuthCredential.getSmsCode();
+                Log.d("code",code);
+            }
+
+            @Override
+            public void onVerificationFailed(@NonNull FirebaseException e) {
+                Log.e("Error",e.getMessage());
+                editPhone.setError("Incorrect format phone number");
+            }
+
+            @Override
+            public void onCodeSent(@NonNull String s, @NonNull PhoneAuthProvider.ForceResendingToken forceResendingToken) {
+                super.onCodeSent(s, forceResendingToken);
+                Intent intent = new Intent(ForgotPasswordActivity.this, OTPActivity.class);
+                intent.putExtra("code", s);
+                intent.putExtra("phoneNumber", phone);
+                intent.putExtra("uname", uname);
+                startActivity(intent);
+            }
+        };
+
+        PhoneAuthOptions options =
+                PhoneAuthOptions.newBuilder(mAuth)
+                        .setPhoneNumber(phone)       // Phone number to verify
+                        .setTimeout(60L, TimeUnit.SECONDS) // Timeout and unit
+                        .setActivity(ForgotPasswordActivity.this)                 // Activity (for callback binding)
+                        .setCallbacks(mCallbacks)          // OnVerificationStateChangedCallbacks
+                        .build();
+        PhoneAuthProvider.verifyPhoneNumber(options);
+
     }
 
 }

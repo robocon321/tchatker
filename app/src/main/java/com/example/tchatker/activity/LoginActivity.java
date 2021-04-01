@@ -77,7 +77,7 @@ public class LoginActivity extends AppCompatActivity {
                             editUname.setError("Not exists this username");
                             editUname.requestFocus();
                         }else{
-                                Account account = snapshot.child("uname").getValue(Account.class);
+                                Account account = snapshot.child(uname).getValue(Account.class);
                                 if (!pwd.equals(account.getPwd())) {
                                     editPwd.setError("Incorrect password");
                                     editPwd.requestFocus();
@@ -110,8 +110,33 @@ public class LoginActivity extends AppCompatActivity {
         txtForgotAccount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(LoginActivity.this, ForgotPasswordActivity.class);
-                startActivity(intent);
+                String uname = editUname.getText().toString();
+                reference.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if(!snapshot.hasChild(uname) || uname.trim().equals("")){
+                            editUname.setError("Not exists this username");
+                            editUname.requestFocus();
+                        }else {
+                            String phoneNumber = snapshot.child(uname).child("phoneNumber").getValue().toString();
+                            if(phoneNumber.equals("")){
+                                Intent intent = new Intent(LoginActivity.this, ForgotPasswordActivity.class);
+                                intent.putExtra("uname", uname);
+                                startActivity(intent);
+                            }else{
+                                Intent intent = new Intent(LoginActivity.this, ForgotPasswordActivity.class);
+                                intent.putExtra("uname", uname);
+                                intent.putExtra("phoneNumber", snapshot.child(uname).child("phoneNumber").getValue(String.class));
+                                startActivity(intent);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e("Error", error.getMessage());
+                    }
+                });
             }
         });
     }

@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -22,14 +23,19 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class OTPActivity extends AppCompatActivity {
-    String phone, code;
+    String phone, code, uname;
     Button btnEnter, btnCancel;
     EditText editOTP;
     TextView txtNotify;
     FirebaseAuth mAuth;
     int timeout = 60;
+    SharedPreferences sharedPreferences;
+    FirebaseDatabase database;
+    DatabaseReference reference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +43,7 @@ public class OTPActivity extends AppCompatActivity {
         setContentView(R.layout.activity_o_t_p);
 
         mAuth = ForgotPasswordActivity.mAuth;
+        mAuth.setLanguageCode("vi");
 
         addControls();
         setEvents();
@@ -88,7 +95,15 @@ public class OTPActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            Log.d("Result","Completed!");
+                            sharedPreferences = getSharedPreferences("login",MODE_PRIVATE);
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                            editor.putString("uname", uname);
+                            editor.commit();
+
+                            reference.child(uname).child("phoneNumber").setValue(phone);
+
+                            Intent intent = new Intent(OTPActivity.this, HomeActivity.class);
+                            startActivity(intent);
                         } else {
                             Log.d("Result","Fail!");
                         }
@@ -100,7 +115,11 @@ public class OTPActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         Intent intent = getIntent();
-        phone = intent.getStringExtra("phone");
+        phone = intent.getStringExtra("phoneNumber");
         code = intent.getStringExtra("code");
+        uname = intent.getStringExtra("uname");
+
+        database = FirebaseDatabase.getInstance();
+        reference = database.getReference("user");
     }
 }
