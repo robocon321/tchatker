@@ -97,7 +97,6 @@ public class NewsFragment extends Fragment {
         editText = view.findViewById(R.id.editText);
         btnPostImage = view.findViewById(R.id.btnPostImage);
         btnPostVideo = view.findViewById(R.id.btnPostVideo);
-        btnBackground = view.findViewById(R.id.btnPostBackground);
         recyclerViewNews = view.findViewById(R.id.recyclerViewNews);
         btnPost = view.findViewById(R.id.btnPost);
 

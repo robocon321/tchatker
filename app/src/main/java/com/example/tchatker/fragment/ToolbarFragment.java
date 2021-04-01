@@ -27,8 +27,6 @@ import com.google.firebase.database.FirebaseDatabase;
 public class ToolbarFragment extends Fragment {
     EditText editSearch;
     ImageView imgBonus;
-    FirebaseDatabase database;
-    DatabaseReference reference;
 
     @Nullable
     @Override
@@ -42,9 +40,6 @@ public class ToolbarFragment extends Fragment {
     public void init(View view){
         editSearch = view.findViewById(R.id.editSearch);
         imgBonus = view.findViewById(R.id.imgBonus);
-
-        database = FirebaseDatabase.getInstance();
-        reference = database.getReference();
     }
 
     public void setEvents() {

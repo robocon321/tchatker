@@ -40,6 +40,7 @@ public class SearchFriendRecyclerViewAdapter extends RecyclerView.Adapter<Search
 
         database = FirebaseDatabase.getInstance();
         reference = database.getReference("user");
+        friends = new ArrayList<>();
 
         SharedPreferences sharedPreferences = context.getSharedPreferences("login", Context.MODE_PRIVATE);
         uname = sharedPreferences.getString("uname","robocon321");
@@ -82,7 +83,7 @@ public class SearchFriendRecyclerViewAdapter extends RecyclerView.Adapter<Search
                     }
                 }
 
-                holder.txtManualFriend.setText(count+"");
+                holder.txtManualFriend.setText(count+" bạn chung");
             }
 
             @Override
@@ -107,13 +108,13 @@ public class SearchFriendRecyclerViewAdapter extends RecyclerView.Adapter<Search
                             String friend = item.getValue(String.class);
                             if(friend.equals(account.getUname())){
                                 reference.child(uname).child("friends").child(item.getKey()).removeValue();
-                                Picasso.get().load(R.drawable.add_friend).into(holder.imgAddFriend);
+                                holder.imgAddFriend.setImageResource(R.drawable.add_friend);
                                 return ;
                             }
                         }
                         reference.child(uname).child("friends").push().setValue(account.getUname());
                         reference.child(account.getUname()).child("friends").push().setValue(uname);
-                        Picasso.get().load(R.drawable.remove_friend).into(holder.imgAddFriend);
+                        holder.imgAddFriend.setImageResource(R.drawable.remove_friend);
                     }
 
                     @Override

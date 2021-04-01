@@ -47,7 +47,7 @@
         </RelativeLayout>
         <LinearLayout
             android:orientation="horizontal"
-            android:weightSum="3"
+            android:weightSum="2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <Button
@@ -67,16 +67,6 @@
                 android:textSize="7dp"
                 android:backgroundTint="@color/white"
                 android:drawableLeft="@drawable/post_video"
-                android:layout_weight="1"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"/>
-            <Button
-                android:id="@+id/btnPostBackground"
-                android:text="Background"
-                android:textColor="#00C9C3"
-                android:textSize="7dp"
-                android:backgroundTint="@color/white"
-                android:drawableLeft="@drawable/post_background"
                 android:layout_weight="1"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"/>
