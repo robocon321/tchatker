@@ -4,21 +4,25 @@
     android:layout_height="wrap_content"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <EditText
             android:id="@+id/editSearch"
             android:hint="Search"
             android:drawableLeft="@drawable/search"
-            android:layout_width="300dp"
-            android:layout_height="match_parent"/>
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@id/imgBonus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
         <ImageView
             android:id="@+id/imgBonus"
             android:src="@drawable/add"
-            android:layout_marginLeft="30dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="10dp"
+            android:layout_marginLeft="10dp"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"/>
-    </androidx.appcompat.widget.Toolbar>
+            android:layout_height="wrap_content"/>
+    </RelativeLayout>
 </LinearLayout>
