@@ -73,7 +73,6 @@ public class NewsFragment extends Fragment {
 
     SharedPreferences sharedPreferences;
     String uname;
-    String typeContent = "NORMAL";
     String newsId;
 
     @Nullable
@@ -89,7 +88,7 @@ public class NewsFragment extends Fragment {
         database = FirebaseDatabase.getInstance();
         databaseReference = database.getReference("user");
         storage = FirebaseStorage.getInstance();
-        storageReference = storage.getReference("image");
+        storageReference = storage.getReferenceFromUrl("gs://tchatker.appspot.com");
 
         sharedPreferences = getActivity().getSharedPreferences("login", Context.MODE_PRIVATE);
         uname = sharedPreferences.getString("uname","robocon321");
@@ -117,7 +116,9 @@ public class NewsFragment extends Fragment {
                         News itemNews = newsSnapshot.getValue(News.class);
                         itemNews.setId(newsSnapshot.getKey());
                         itemNews.setUname(snapshot.child("uname").getValue(String.class));
+                        Log.d("EEE", itemNews.toString());
                         news.add(itemNews);
+                        adapter.notifyDataSetChanged();
                     }
                     // Friend news
                     for(DataSnapshot friendSnapshot: snapshot.child("friends").getChildren()){
@@ -160,7 +161,7 @@ public class NewsFragment extends Fragment {
         btnPost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                uploadNews();
+                uploadNews("NORMAL");
             }
         });
 
@@ -174,14 +175,23 @@ public class NewsFragment extends Fragment {
                 startActivityForResult(Intent.createChooser(intent,"Select Picture"), REQ_GET_MULTI_IMG);
             }
         });
+
+        btnPostVideo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setType("video/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent,"Select Video"),REQ_GET_VIDEO);
+            }
+        });
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if(requestCode == REQ_GET_MULTI_IMG && resultCode == RESULT_OK && data!=null){
             if(data.getClipData() != null){
-                typeContent = "IMAGE";
-                uploadNews();
+                uploadNews("IMAGE");
 
                 int count = data.getClipData().getItemCount();
 
@@ -198,7 +208,6 @@ public class NewsFragment extends Fragment {
                 }
             }
             else if(data.getData() != null){
-                typeContent = "IMAGE";
 
                 Uri imgUri = data.getData();
                 try {
@@ -209,7 +218,75 @@ public class NewsFragment extends Fragment {
                     Log.e("Error", e.getMessage());
                 }
             }
+        }else if(requestCode == REQ_GET_VIDEO && resultCode == RESULT_OK && data !=null){
+            try {
+                String nameFile = getFileName(data.getData());
+                InputStream inputStream = getActivity().getContentResolver().openInputStream(data.getData());
+
+                uploadFile(inputStream, nameFile);
+            } catch (IOException e) {
+                Log.e("Error", e.getMessage());
+            }
         }
+    }
+
+    public void uploadFile(InputStream inputStream, String nameFile){
+        UploadTask uploadTask = storageReference.child("file").child(nameFile).putStream(inputStream);
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.e("Error", e.getMessage());
+            }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
+                uploadTask.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        Log.e("Error", exception.getMessage());
+                    }
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        Task task = taskSnapshot.getMetadata().getReference().getDownloadUrl();
+                        task.addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                if (task.isSuccessful()) {
+                                    String path = uri.toString();
+                                    uploadNews("VIDEO");
+                                    databaseReference.child(uname).child("news").child(newsId).child("content").setValue(path);
+                                } else
+                                    Log.e("Error", "Uncompleted!");
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    public String getFileName(Uri uri) {
+        String result = null;
+        if (uri.getScheme().equals("content")) {
+            Cursor cursor = getActivity().getContentResolver().query(uri, null, null, null, null);
+            try {
+                if (cursor != null && cursor.moveToFirst()) {
+                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+        if (result == null) {
+            result = uri.getPath();
+            int cut = result.lastIndexOf('/');
+            if (cut != -1) {
+                result = result.substring(cut + 1);
+            }
+        }
+        return result;
     }
 
     public void uploadImageBitmap(Bitmap bitmap){
@@ -219,7 +296,7 @@ public class NewsFragment extends Fragment {
 
         Calendar calendar = Calendar.getInstance();
 
-        UploadTask uploadTask = storageReference.child("image" + calendar.getTimeInMillis()).putBytes(data);
+        UploadTask uploadTask = storageReference.child("image").child("image" + calendar.getTimeInMillis()).putBytes(data);
         uploadTask.addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception exception) {
@@ -244,7 +321,7 @@ public class NewsFragment extends Fragment {
         });
     }
 
-    public void uploadNews(){
+    public void uploadNews(String typeContent){
         String text = editText.getText().toString();
         Time time = new Time();
         News itemNews = new News(time, text, typeContent);

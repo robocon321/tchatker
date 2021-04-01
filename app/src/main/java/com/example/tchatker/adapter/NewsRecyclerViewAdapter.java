@@ -4,13 +4,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.MediaController;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -29,6 +33,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -36,8 +42,10 @@ import java.util.ArrayList;
 public class NewsRecyclerViewAdapter extends RecyclerView.Adapter<NewsRecyclerViewAdapter.ViewHolder> {
     ArrayList<News> news;
     Context context;
+
     FirebaseDatabase database;
-    DatabaseReference reference;
+    DatabaseReference referenceStorage;
+
     SharedPreferences sharedPreferences;
     String uname;
 
@@ -46,7 +54,8 @@ public class NewsRecyclerViewAdapter extends RecyclerView.Adapter<NewsRecyclerVi
         this.context = context;
 
         database = FirebaseDatabase.getInstance();
-        reference = database.getReference("user");
+        referenceStorage = database.getReference("user");
+
         sharedPreferences = context.getSharedPreferences("login", Context.MODE_PRIVATE);
         uname = sharedPreferences.getString("uname", "robocon321");
     }
@@ -64,7 +73,7 @@ public class NewsRecyclerViewAdapter extends RecyclerView.Adapter<NewsRecyclerVi
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         News itemNews = news.get(position);
 
-        reference.child(itemNews.getUname()).addListenerForSingleValueEvent(new ValueEventListener() {
+        referenceStorage.child(itemNews.getUname()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                     holder.txtName.setText(snapshot.child("name").getValue(String.class));
@@ -72,7 +81,7 @@ public class NewsRecyclerViewAdapter extends RecyclerView.Adapter<NewsRecyclerVi
                     Time time = itemNews.getTime();
                     holder.txtTime.setText(time.toNow());
 
-                    reference.child(itemNews.getUname()).child("news").child(itemNews.getId()).addValueEventListener(new ValueEventListener() {
+                referenceStorage.child(itemNews.getUname()).child("news").child(itemNews.getId()).addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
                             // SnapshotLike
@@ -104,7 +113,18 @@ public class NewsRecyclerViewAdapter extends RecyclerView.Adapter<NewsRecyclerVi
                                     contentLayout.addView(imgView);
                                 }
 
-                                holder.layoutMain.addView(contentLayout);
+                                holder.layoutContent.addView(contentLayout);
+                            }else if(typeContent.equals("VIDEO")){
+                                VideoView videoView = new VideoView(context);
+                                videoView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                                videoView.setVideoURI(Uri.parse(snapshot.child("content").getValue(String.class)));
+
+                                MediaController mediaController = new MediaController(context);
+                                videoView.setMediaController(mediaController);
+                                mediaController.setAnchorView(videoView);
+
+                                holder.layoutContent.addView(videoView);
+                                Log.d("AAAA", "Hello world");
                             }else {
                                 // Nothing else
                             }
@@ -134,6 +154,7 @@ public class NewsRecyclerViewAdapter extends RecyclerView.Adapter<NewsRecyclerVi
         ImageView imgAvatar;
         TextView txtName, txtTime, txtText, txtLike, txtComment;
         RelativeLayout layoutMain;
+        LinearLayout layoutContent;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -144,12 +165,13 @@ public class NewsRecyclerViewAdapter extends RecyclerView.Adapter<NewsRecyclerVi
             txtComment = itemView.findViewById(R.id.txtComment);
             txtText = itemView.findViewById(R.id.txtText);
             layoutMain = itemView.findViewById(R.id.layoutMain);
+            layoutContent = itemView.findViewById(R.id.layoutContent);
 
             txtLike.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     News itemNews = news.get(getAdapterPosition());
-                    DatabaseReference referenceLike = reference.child(itemNews.getUname()).child("news").child(itemNews.getId()).child("likes");
+                    DatabaseReference referenceLike = referenceStorage.child(itemNews.getUname()).child("news").child(itemNews.getId()).child("likes");
                     referenceLike.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
