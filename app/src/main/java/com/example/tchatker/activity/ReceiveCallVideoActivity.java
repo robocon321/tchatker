@@ -67,6 +67,7 @@ public class ReceiveCallVideoActivity extends AppCompatActivity {
         imgDismiss.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d("AAAA", "1");
                 CallService.isStartCall = false;
                 WebView webView = new WebView(ReceiveCallVideoActivity.this);
                 webView.getSettings().setJavaScriptEnabled(true);
@@ -82,12 +83,14 @@ public class ReceiveCallVideoActivity extends AppCompatActivity {
                         }
                     }
                 });
+                Log.d("AAAA", "2");
                 webView.loadUrl("https://mtbfo.csb.app/");
 
                 webView.setWebViewClient(new WebViewClient(){
                     @Override
                     public void onPageFinished(WebView view, String url) {
                         super.onPageFinished(view, url);
+                        Log.d("AAAA", "3");
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                             webView.evaluateJavascript("disaccept('"+uname+"')", null);
                         } else {

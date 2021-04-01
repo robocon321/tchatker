@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.PermissionRequest;
@@ -55,6 +56,7 @@ public class ReceiveCallAudioActivity extends AppCompatActivity {
 
     public void setEvents(){
         CallService.isStartCall = false;
+        Log.d("BBBB", "1");
 
         WebView webView = new WebView(ReceiveCallAudioActivity.this);
         webView.getSettings().setJavaScriptEnabled(true);
@@ -65,6 +67,7 @@ public class ReceiveCallAudioActivity extends AppCompatActivity {
         webView.setWebChromeClient(new WebChromeClient(){
             @Override
             public void onPermissionRequest(final PermissionRequest request) {
+                Log.d("BBBB", "2");
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     request.grant(request.getResources());
                 }
@@ -114,6 +117,7 @@ public class ReceiveCallAudioActivity extends AppCompatActivity {
         imgDismiss.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d("BBBB", "3");
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                     webView.evaluateJavascript("disaccept('"+uname+"')", null);
                 } else {

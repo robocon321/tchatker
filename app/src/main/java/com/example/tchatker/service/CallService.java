@@ -59,6 +59,7 @@ public class CallService extends Service {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot snapshot) {
                                     Account account = snapshot.getValue(Account.class);
+                                    Log.d("CCC", account.toString());
                                     if(incomeInfo.isVideo()){
                                         Intent intentX = new Intent(CallService.this, ReceiveCallVideoActivity.class);
                                         intentX.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
