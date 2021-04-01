@@ -71,6 +71,7 @@ public class ChatMessageActivity extends AppCompatActivity {
 
     Account account;
     String idBoxMessage;
+    String uname;
 
     SharedPreferences sharedPreferences;
 
@@ -135,54 +136,52 @@ public class ChatMessageActivity extends AppCompatActivity {
 
     public void initMessageContent(){
         sharedPreferences = getSharedPreferences("login", MODE_PRIVATE);
-        String myUname = sharedPreferences.getString("uname","robocon321");
+        uname = sharedPreferences.getString("uname","robocon321");
 
         messages = new ArrayList<>();
         adapter = new MessageRecyclerViewAdapter(messages, ChatMessageActivity.this);
 
-        databaseReference.child("user").orderByChild("uname").equalTo(myUname).addValueEventListener(new ValueEventListener() {
+        databaseReference.child("user").child(uname).addListenerForSingleValueEvent(new ValueEventListener() {
+            boolean isExistBoxChat = false;
+            long count;
+
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for(DataSnapshot itemUser : snapshot.getChildren()){
-                    for(DataSnapshot boxMessage : itemUser.child("messages").getChildren()){
-                        String idBoxMessage = boxMessage.getValue(String.class);
-                        databaseReference.child("chat").orderByKey().equalTo(idBoxMessage).addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot snapshotChat) {
-                                if (snapshotChat.exists())
-                                    for(DataSnapshot itemBoxChat : snapshotChat.getChildren()){
-                                        if(itemBoxChat.child("type").getValue(String.class).equals("person")){
-                                            for(DataSnapshot memberSnapshot : itemBoxChat.child("member").getChildren()){
-                                                if(memberSnapshot.getValue(String.class).equals(account.getUname())){
-                                                    messages.clear();
-                                                    for(DataSnapshot messageSnapShot : itemBoxChat.child("message").getChildren()){
-                                                        Message message = messageSnapShot.getValue(Message.class);
-                                                        messages.add(message);
-                                                        ChatMessageActivity.this.idBoxMessage = idBoxMessage;
+                count = snapshot.child("messages").getChildrenCount();
+                for(DataSnapshot boxMessage : snapshot.child("messages").getChildren()) {
+                    databaseReference.child("chat").child(boxMessage.getValue(String.class)).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshotChat) {
+                            count --;
+                            if (snapshotChat.child("type").getValue(String.class).equals("person")) {
+                                for (DataSnapshot memberSnapshot : snapshotChat.child("member").getChildren()) {
+                                    Log.d("HHH", memberSnapshot.getValue(String.class));
+                                    if (memberSnapshot.getValue(String.class).equals(account.getUname())){
+                                        isExistBoxChat = true;
+                                        idBoxMessage = boxMessage.getValue(String.class);
 
-                                                        // Change status
-                                                        if(!message.getSender().equals(myUname)){
-                                                            databaseReference.child("chat")
-                                                                    .child(idBoxMessage)
-                                                                    .child("message")
-                                                                    .child(messageSnapShot.getKey())
-                                                                    .child("status").setValue(true);
-                                                        }
-                                                    }
-                                                    Collections.sort(messages);
-                                                }
-                                                adapter.notifyDataSetChanged();
-                                            }
-                                        }
+                                        listenBoxMessage(idBoxMessage);
                                     }
+                                }
                             }
+                            if(!isExistBoxChat && count == 0){
+                                String id = databaseReference.child("chat").push().getKey();
+                                idBoxMessage = id;
+                                databaseReference.child("chat").child(id).child("type").setValue("person");
+                                databaseReference.child("chat").child(id).child("member").push().setValue(uname);
+                                databaseReference.child("chat").child(id).child("member").push().setValue(account.getUname());
 
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError error) {
-                                Log.e("Error", error.getMessage());
+                                databaseReference.child("user").child(uname).child("messages").push().setValue(id);
+                                databaseReference.child("user").child(account.getUname()).child("messages").push().setValue(id);
+                                listenBoxMessage(idBoxMessage);
                             }
-                        });
-                    }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+                            Log.e("Error", error.getMessage());
+                        }
+                    });
                 }
             }
 
@@ -191,7 +190,6 @@ public class ChatMessageActivity extends AppCompatActivity {
                 Log.e("Error", error.getMessage());
             }
         });
-
         recyclerViewMessage.setAdapter(adapter);
         recyclerViewMessage.setHasFixedSize(true);
         recyclerViewMessage.setLayoutManager(new LinearLayoutManager(ChatMessageActivity.this));
@@ -267,40 +265,41 @@ public class ChatMessageActivity extends AppCompatActivity {
                 String nameFile = getFileName(dataIntent.getData());
                 InputStream inputStream = getContentResolver().openInputStream(dataIntent.getData());
 
-
-                UploadTask uploadTask = storageReference.child("file").child(nameFile).putStream(inputStream);
-                uploadTask.addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.e("Error", e.getMessage());
-                    }
-                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        Task task = taskSnapshot.getMetadata().getReference().getDownloadUrl();
-
-                        uploadTask.addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception exception) {
-                                Log.e("Error", exception.getMessage());
-                            }
-                        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                            @Override
-                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                String content = taskSnapshot.getMetadata().getName();
-                                String sender = sharedPreferences.getString("uname", "robocon321");
-                                boolean status = false;
-                                String typeContent = "File";
-                                Message message = new Message(sender, content, status, typeContent);
-                                databaseReference.child("chat").child(idBoxMessage).child("message").push().setValue(message);
-                            }
-                        });
-                    }
-                });
+                uploadFile(inputStream, nameFile);
             } catch (IOException e) {
                 Log.e("Error", e.getMessage());
             }
         }
+    }
+
+    public void uploadFile(InputStream inputStream, String nameFile){
+        UploadTask uploadTask = storageReference.child("file").child(nameFile).putStream(inputStream);
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.e("Error", e.getMessage());
+            }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                uploadTask.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        Log.e("Error", exception.getMessage());
+                    }
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        String content = taskSnapshot.getMetadata().getName();
+                        String sender = sharedPreferences.getString("uname", "robocon321");
+                        boolean status = false;
+                        String typeContent = "File";
+                        Message message = new Message(sender, content, status, typeContent);
+                        databaseReference.child("chat").child(idBoxMessage).child("message").push().setValue(message);
+                    }
+                });
+            }
+        });
     }
 
     public void uploadImageBitmap(Bitmap bitmap){
@@ -359,5 +358,35 @@ public class ChatMessageActivity extends AppCompatActivity {
             }
         }
         return result;
+    }
+
+    public void listenBoxMessage(String id){
+        databaseReference.child("chat").child(idBoxMessage).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                messages.clear();
+                for (DataSnapshot messageSnapShot : snapshot.child("message").getChildren()) {
+
+                    Message message = messageSnapShot.getValue(Message.class);
+                    messages.add(message);
+
+                    // Change status
+                    if (!message.getSender().equals(uname)) {
+                        databaseReference.child("chat")
+                                .child(idBoxMessage)
+                                .child("message")
+                                .child(messageSnapShot.getKey())
+                                .child("status").setValue(true);
+                    }
+                }
+                Collections.sort(messages);
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Error", error.getMessage());
+            }
+        });
     }
 }
