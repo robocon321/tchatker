@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import com.example.tchatker.R;
 import com.example.tchatker.model.Account;
+import com.example.tchatker.model.Time;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
@@ -92,7 +93,7 @@ public class CreateAccountActivity extends AppCompatActivity {
                             editUname.requestFocus();
                             return ;
                         }else{
-                            reference.child(uname).setValue(new Account(uname,pwd,"","","",new Date(1990,1,1), "",""))
+                            reference.child(uname).setValue(new Account(uname,pwd,"","","",new Time(1990,1,1), "","",""))
                                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {

@@ -135,6 +135,7 @@ public class ChatMessageActivity extends AppCompatActivity {
     }
 
     public void initMessageContent(){
+
         sharedPreferences = getSharedPreferences("login", MODE_PRIVATE);
         uname = sharedPreferences.getString("uname","robocon321");
 

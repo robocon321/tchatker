@@ -131,13 +131,6 @@ public class Time implements Serializable {
 
     @Override
     public String toString() {
-        return "Time{" +
-                "year=" + year +
-                ", month=" + month +
-                ", day=" + day +
-                ", hour=" + hour +
-                ", minute=" + minute +
-                ", second=" + second +
-                '}';
+        return this.day+"/"+this.month+"/"+this.year;
     }
 }

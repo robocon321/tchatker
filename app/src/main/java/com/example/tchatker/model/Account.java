@@ -9,22 +9,24 @@ public class Account implements Serializable{
     private String name;
     private String phoneNumber;
     private String email;
-    private Date birthDay;
+    private Time birthday;
     private String avatar;
     private String status;
+    private String background;
 
     public Account() {
     }
 
-    public Account(String uname, String pwd, String name, String phoneNumber, String email, Date birthDay, String avatar, String status) {
+    public Account(String uname, String pwd, String name, String phoneNumber, String email, Time birthday, String avatar, String status, String background) {
         this.uname = uname;
         this.pwd = pwd;
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.email = email;
-        this.birthDay = birthDay;
+        this.birthday = birthday;
         this.avatar = avatar;
         this.status = status;
+        this.background = background;
     }
 
     public String getStatus() {
@@ -83,12 +85,20 @@ public class Account implements Serializable{
         this.email = email;
     }
 
-    public Date getBirthDay() {
-        return birthDay;
+    public Time getBirthday() {
+        return birthday;
     }
 
-    public void setBirthDay(Date birthDay) {
-        this.birthDay = birthDay;
+    public void setBirthday(Time birthday) {
+        this.birthday = birthday;
+    }
+
+    public String getBackground() {
+        return background;
+    }
+
+    public void setBackground(String background) {
+        this.background = background;
     }
 
     @Override
@@ -99,9 +109,10 @@ public class Account implements Serializable{
                 ", name='" + name + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", email='" + email + '\'' +
-                ", birthDay=" + birthDay +
+                ", birthday=" + birthday +
                 ", avatar='" + avatar + '\'' +
                 ", status='" + status + '\'' +
+                ", background='" + background + '\'' +
                 '}';
     }
 }
