@@ -115,7 +115,6 @@ public class NewsFragment extends Fragment {
                         News itemNews = newsSnapshot.getValue(News.class);
                         itemNews.setId(newsSnapshot.getKey());
                         itemNews.setUname(snapshot.child("uname").getValue(String.class));
-                        Log.d("EEE", itemNews.toString());
                         news.add(itemNews);
                         adapter.notifyDataSetChanged();
                     }

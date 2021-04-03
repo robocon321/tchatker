@@ -2,18 +2,20 @@ package com.example.tchatker.activity;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.example.tchatker.R;
+import com.example.tchatker.adapter.NewsRecyclerViewAdapter;
 import com.example.tchatker.model.Account;
+import com.example.tchatker.model.News;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -21,49 +23,52 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
-public class ProfileActivity extends AppCompatActivity {
-    String unameAccess;
+import java.util.ArrayList;
+
+public class DiaryActivity extends AppCompatActivity {
+    Button btnIntro, btnDiary;
+    ImageView imgAvatar, imgBackground;
+
+    RecyclerView rcyNews;
+    NewsRecyclerViewAdapter adapter;
+    ArrayList<News> news;
+
     FirebaseDatabase database;
     DatabaseReference reference;
 
-    Button btnIntro, btnDiary;
-    TextView txtName, txtBirthday, txtPhone, txtEmail;
-    ImageView imgAvatar, imgBackground;
+    String unameAccess;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_profile);
+        setContentView(R.layout.activity_diary);
         init();
         setEvents();
     }
 
     public void init(){
+        unameAccess = getIntent().getStringExtra("uname");
+
         btnIntro = findViewById(R.id.btnIntro);
         btnDiary = findViewById(R.id.btnDiary);
 
         imgAvatar = findViewById(R.id.imgAvatar);
         imgBackground = findViewById(R.id.imgBackground);
 
-        txtName = findViewById(R.id.txtName);
-        txtBirthday = findViewById(R.id.txtBirthday);
-        txtPhone = findViewById(R.id.txtPhone);
-        txtEmail = findViewById(R.id.txtEmail);
+        rcyNews = findViewById(R.id.rcyNews);
+        news = new ArrayList<>();
+        adapter = new NewsRecyclerViewAdapter(news, DiaryActivity.this);
+        rcyNews.setLayoutManager(new LinearLayoutManager(this));
+        rcyNews.setHasFixedSize(true);
+        rcyNews.setAdapter(adapter);
 
         database = FirebaseDatabase.getInstance();
         reference = database.getReference("user");
-
-        Intent intent = getIntent();
-        unameAccess = intent.getStringExtra("uname");
 
         reference.child(unameAccess).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Account account = snapshot.getValue(Account.class);
-                txtName.setText(account.getName());
-                txtBirthday.setText(account.getBirthday().toString());
-                txtPhone.setText(account.getPhoneNumber());
-                txtEmail.setText(account.getEmail());
 
                 String avatar = account.getAvatar();
                 if(avatar != null){
@@ -73,7 +78,18 @@ public class ProfileActivity extends AppCompatActivity {
                 String background = account.getBackground();
                 if(background != null){
                     Picasso.get().load(snapshot.child("background").getValue(String.class)).into(imgBackground);
-                }            }
+                }
+
+                news.clear();
+
+                for(DataSnapshot item : snapshot.child("news").getChildren()){
+                    News itemNews = item.getValue(News.class);
+                    itemNews.setId(item.getKey());
+                    itemNews.setUname(unameAccess);
+                    news.add(itemNews);
+                    adapter.notifyDataSetChanged();
+                }
+            }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
@@ -83,10 +99,10 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     public void setEvents(){
-        btnDiary.setOnClickListener(new View.OnClickListener() {
+        btnIntro.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(ProfileActivity.this, DiaryActivity.class);
+                Intent intent = new Intent(DiaryActivity.this, ProfileActivity.class);
                 intent.putExtra("uname", unameAccess);
                 startActivity(intent);
             }
