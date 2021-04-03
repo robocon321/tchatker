@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:title="My profile" android:id="@+id/mnProfile"/>
+    <item android:title="Create group" android:id="@+id/mnCreateGroup"/>
+    <item android:title="Logout" android:id="@+id/mnLogout"/>
+</menu>

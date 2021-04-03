@@ -1,17 +1,21 @@
 package com.example.tchatker.fragment;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,6 +24,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.tchatker.R;
+import com.example.tchatker.activity.LoginActivity;
 import com.example.tchatker.activity.SearchActivity;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -27,6 +32,7 @@ import com.google.firebase.database.FirebaseDatabase;
 public class ToolbarFragment extends Fragment {
     EditText editSearch;
     ImageView imgBonus;
+    PopupMenu popupMenu;
 
     @Nullable
     @Override
@@ -40,6 +46,9 @@ public class ToolbarFragment extends Fragment {
     public void init(View view){
         editSearch = view.findViewById(R.id.editSearch);
         imgBonus = view.findViewById(R.id.imgBonus);
+
+        popupMenu = new PopupMenu(getActivity(), imgBonus);
+        popupMenu.inflate(R.menu.more_menu);
     }
 
     public void setEvents() {
@@ -48,6 +57,26 @@ public class ToolbarFragment extends Fragment {
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity(), SearchActivity.class);
                 startActivity(intent);
+            }
+        });
+        imgBonus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                popupMenu.show();
+            }
+        });
+
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                if(item.getItemId() == R.id.mnProfile){
+                    Toast.makeText(getActivity(), "Profile", Toast.LENGTH_SHORT).show();
+                }else if(item.getItemId() == R.id.mnCreateGroup){
+                    Toast.makeText(getActivity(), "Create group", Toast.LENGTH_SHORT).show();
+                }else{
+                    Toast.makeText(getActivity(), "Logout", Toast.LENGTH_SHORT).show();
+                }
+                return false;
             }
         });
     }
