@@ -25,6 +25,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.tchatker.R;
 import com.example.tchatker.activity.LoginActivity;
+import com.example.tchatker.activity.ProfileActivity;
 import com.example.tchatker.activity.SearchActivity;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -33,6 +34,7 @@ public class ToolbarFragment extends Fragment {
     EditText editSearch;
     ImageView imgBonus;
     PopupMenu popupMenu;
+    SharedPreferences sharedPreferences;
 
     @Nullable
     @Override
@@ -44,6 +46,7 @@ public class ToolbarFragment extends Fragment {
     }
 
     public void init(View view){
+        sharedPreferences = getActivity().getSharedPreferences("login", Context.MODE_PRIVATE);
         editSearch = view.findViewById(R.id.editSearch);
         imgBonus = view.findViewById(R.id.imgBonus);
 
@@ -70,11 +73,13 @@ public class ToolbarFragment extends Fragment {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 if(item.getItemId() == R.id.mnProfile){
-                    Toast.makeText(getActivity(), "Profile", Toast.LENGTH_SHORT).show();
+                    String uname = sharedPreferences.getString("uname", "robocon321");
+                    Intent intent = new Intent(getActivity(), ProfileActivity.class);
+                    intent.putExtra("uname", uname);
+                    startActivity(intent);
                 }else if(item.getItemId() == R.id.mnCreateGroup){
                     Toast.makeText(getActivity(), "Create group", Toast.LENGTH_SHORT).show();
                 }else{
-                    SharedPreferences sharedPreferences = getActivity().getSharedPreferences("login", Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.remove("uname");
                     editor.commit();

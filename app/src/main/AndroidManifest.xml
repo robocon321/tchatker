@@ -17,7 +17,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Tchatker">
-        <activity android:name=".activity.ProfileActivity"></activity>
+        <activity android:name=".activity.DiaryActivity"></activity>
+        <activity android:name=".activity.ProfileActivity" />
         <activity android:name=".activity.SearchActivity" />
         <activity android:name=".activity.CommentActivity" />
         <activity android:name=".activity.SendCallAudioActivity" />
