@@ -74,7 +74,13 @@ public class ToolbarFragment extends Fragment {
                 }else if(item.getItemId() == R.id.mnCreateGroup){
                     Toast.makeText(getActivity(), "Create group", Toast.LENGTH_SHORT).show();
                 }else{
-                    Toast.makeText(getActivity(), "Logout", Toast.LENGTH_SHORT).show();
+                    SharedPreferences sharedPreferences = getActivity().getSharedPreferences("login", Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.remove("uname");
+                    editor.commit();
+
+                    Intent intent = new Intent(getActivity(), LoginActivity.class);
+                    startActivity(intent);
                 }
                 return false;
             }
